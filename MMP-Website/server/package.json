@@ -1,0 +1,47 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon src/app.js --exec \"npm run lint && node\"",
+    "lint": "eslint src/**/*.js",
+    "build": "echo hello",
+    "postinstall": "prisma generate",
+    "open": "node src/app.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@prisma/client": "^5.4.2",
+    "@vercel/postgres": "^0.5.0",
+    "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-validator": "^7.0.1",
+    "googleapis": "^128.0.0",
+    "helmet": "^7.0.0",
+    "json2csv": "^6.0.0-alpha.2",
+    "jsonwebtoken": "^9.0.2",
+    "jszip": "^3.10.1",
+    "morgan": "^1.10.0",
+    "nodemailer": "^6.9.7"
+  },
+  "devDependencies": {
+    "eslint": "^8.50.0",
+    "eslint-plugin-vue": "^9.17.0",
+    "nodemon": "^3.0.1",
+    "prisma": "^5.4.2"
+  },
+  "prisma": {
+    "schema": "prisma/schema.prisma"
+  },
+  "engines": {
+    "node": "18.0.0"
+  }
+}

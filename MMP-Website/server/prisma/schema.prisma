@@ -1,0 +1,268 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider  = "postgresql"
+    // url      = env("DATABASE_URL_LOCAL") //Local test connection
+    url       = env("DATABASE_URL") // uses connection pooling
+    directUrl = env("DIRECT_URL") // uses a direct connection
+}
+
+//Enums
+enum Gender {
+    MALE
+    FEMALE
+    OTHERS
+}
+
+enum CivilStatus {
+    SINGLE
+    MARRIED
+    WIDOWED
+    ANNULLED
+}
+
+enum BillStatus {
+    FULLY_PAID
+    PARTIALLY_PAID
+    UNPAID
+}
+
+enum StudentStatus {
+    ACTIVE
+    GRADUATED
+    WITHDRAWN
+    FOR_APPROVAL
+    REJECTED
+}
+
+enum TeacherStatus {
+    ACTIVE
+    INACTIVE
+    REJECTED
+    FOR_APPROVAL
+}
+
+enum Programs {
+    FOUNDATIONAL_COURSES
+    BIBLICAL_FOUNDATION
+    TEACHER_TRACK
+    ADMIN_TRACK
+}
+
+enum EnrollmentStatus {
+    PENDING_APPROVAL
+    IN_PROGRESS
+    CANCELLED
+    PASSED
+    FAILED
+}
+
+enum RequestStatus {
+    PENDING
+    REJECTED
+    UNPAID
+    SENT
+}
+
+enum Track {
+    ADMIN
+    TEACHER
+    BOTH
+}
+
+//Tables
+model Students {
+    //Primary Key
+    student_id              String               @id @db.VarChar(12)
+    //Fields
+    first_name              String               @db.VarChar(50)
+    last_name               String               @db.VarChar(50)
+    middle_name             String?              @db.VarChar(50)
+    address                 String               @db.VarChar(150)
+    mobile_number           String               @db.VarChar(11)
+    landline                String               @db.VarChar(8)
+    email                   String               @unique @db.VarChar(50)
+    birthdate               DateTime             @db.Date
+    birthplace              String               @db.VarChar(150)
+    nationality             String               @db.VarChar(20)
+    gender                  Gender
+    civil_status            CivilStatus
+    no_of_children          Int                  @db.Integer
+    school                  String               @db.VarChar(30)
+    occupation              String               @db.VarChar(30)
+    admin                   String               @db.VarChar(150)
+    church                  String               @db.VarChar(150)
+    pastor                  String               @db.VarChar(150)
+    is_partner_school       Boolean              @db.Boolean
+    gradeschool             String               @default("None") @db.VarChar(50)
+    highschool              String               @default("None") @db.VarChar(50)
+    college                 String               @default("None") @db.VarChar(50)
+    college_course          String               @default("None") @db.VarChar(50)
+    graduate                String               @default("None") @db.VarChar(50)
+    graduate_course         String               @default("None") @db.VarChar(50)
+    others                  String               @default("None") @db.VarChar(200)
+    gradeschool_completed   Boolean              @db.Boolean
+    highschool_completed    Boolean              @db.Boolean
+    college_completed       Boolean              @db.Boolean
+    graduate_completed      Boolean              @db.Boolean
+    essay                   String               @db.Text
+    emergency_name          String               @db.VarChar(150)
+    emergency_address       String               @db.VarChar(150)
+    emergency_mobile_number String               @db.VarChar(11)
+    password                String               @db.VarChar(150)
+    status                  StudentStatus        @default(FOR_APPROVAL)
+    track                   Track
+    // Created and Updated Dates
+    created_at              DateTime             @default(now()) @db.Timestamptz()
+    updated_at              DateTime             @updatedAt @db.Timestamptz()
+    //Relations
+    bills                   Bills[]
+    payments                Payments[]
+    enrollments             Module_Enrollments[]
+    tor_requests            TOR_Requests[]
+}
+
+model Bills {
+    //Primary Key
+    bill_no         String              @id @db.VarChar(11)
+    //Fields
+    fee             Decimal             @db.Decimal(9, 2)
+    deductions      Decimal             @db.Decimal(9, 2)
+    billed_to       String              @db.VarChar(12)
+    status          BillStatus          @default(UNPAID)
+    remarks         String?             @db.VarChar(200)
+    issued_on       DateTime            @db.Date
+    // Created and Updated Dates
+    created_at      DateTime            @default(now()) @db.Timestamptz()
+    updated_at      DateTime            @updatedAt @db.Timestamptz()
+    //Relatons
+    bill_receipient Students            @relation(fields: [billed_to], references: [student_id])
+    payments        Payments[]
+    enrollments     Module_Enrollments?
+}
+
+model Admins {
+    //Primary Key
+    admin_id   String   @id @db.VarChar(12)
+    //Fields
+    email      String   @unique @db.VarChar(100)
+    password   String   @db.VarChar(150)
+    // Created and Updated Dates
+    created_at DateTime @default(now()) @db.Timestamptz()
+    updated_at DateTime @updatedAt @db.Timestamptz()
+}
+
+model Teachers {
+    //Primary Key
+    teacher_id  String        @id @db.VarChar(12)
+    //Fields
+    first_name  String        @db.VarChar(50)
+    last_name   String        @db.VarChar(50)
+    middle_name String?       @db.VarChar(25)
+    email       String        @unique @db.VarChar(100)
+    status      TeacherStatus @default(FOR_APPROVAL)
+    password    String        @db.VarChar(150)
+    // Created and Updated Dates
+    created_at  DateTime      @default(now()) @db.Timestamptz()
+    updated_at  DateTime      @updatedAt @db.Timestamptz()
+    //Relations
+    modules     Modules[]
+}
+
+model Payments {
+    //Primary Key
+    or_no      String   @id @db.VarChar(11)
+    //Fields
+    bill_no    String   @db.VarChar(11)
+    payee      String   @db.VarChar(12)
+    payment    Decimal  @db.Decimal(9, 2)
+    remarks    String?  @db.VarChar(200)
+    paid_on    DateTime @db.Date
+    // Created and Updated Dates
+    created_at DateTime @default(now()) @db.Timestamptz()
+    updated_at DateTime @updatedAt @db.Timestamptz()
+    //Relations
+    bill_paid  Bills    @relation(fields: [bill_no], references: [bill_no])
+    student    Students @relation(fields: [payee], references: [student_id])
+}
+
+model Modules {
+    //Primary Key
+    module_name String               @db.VarChar(100)
+    school_year Int                  @db.Integer //Only the start year (e.g. SY 2023 - 2024, 2023 is saved)
+    //Fields
+    teacher_id  String?              @db.VarChar(12)
+    session_1   DateTime             @db.Date
+    session_2   DateTime             @db.Date
+    program     Programs
+    // Created and Updated Dates
+    created_at  DateTime             @default(now()) @db.Timestamptz()
+    updated_at  DateTime             @updatedAt @db.Timestamptz()
+    //Relations
+    teacher     Teachers?            @relation(fields: [teacher_id], references: [teacher_id])
+    enrollments Module_Enrollments[]
+    details     Module_Details       @relation(fields: [module_name], references: [module_name])
+
+    @@id([module_name, school_year])
+}
+
+model Module_Enrollments {
+    //Primary Key
+    student_id     String           @db.VarChar(12)
+    module_name    String           @db.VarChar(100)
+    school_year    Int              @db.Integer
+    //Fields
+    status         EnrollmentStatus @default(PENDING_APPROVAL)
+    bill_no        String?          @unique @db.VarChar(11)
+    grade          String?          @db.VarChar(4)
+    date_submitted DateTime?        @db.Date
+    date_received  DateTime?        @db.Date
+    no_of_absences Int              @default(0) @db.Integer
+    remarks        String?          @db.VarChar(200)
+    // Created and Updated Dates
+    created_at     DateTime         @default(now()) @db.Timestamptz()
+    updated_at     DateTime         @updatedAt @db.Timestamptz()
+    //Relations
+    student        Students         @relation(fields: [student_id], references: [student_id])
+    module         Modules          @relation(fields: [module_name, school_year], references: [module_name, school_year])
+    bill           Bills?           @relation(fields: [bill_no], references: [bill_no])
+
+    @@id([student_id, module_name, school_year])
+}
+
+model TOR_Requests {
+    //Primary Key
+    req_id       String        @id @db.VarChar(10)
+    //Fields
+    student_id   String        @db.VarChar(12)
+    status       RequestStatus @default(PENDING)
+    request_date DateTime      @db.Date
+    // Created and Updated Dates
+    created_at   DateTime      @default(now()) @db.Timestamptz()
+    updated_at   DateTime      @updatedAt @db.Timestamptz()
+    //Relations
+    student      Students      @relation(fields: [student_id], references: [student_id])
+}
+
+model Module_Details {
+    //Primary Key
+    module_name   String       @id @db.VarChar(100)
+    //Fields
+    prerequisites String[]     @default([]) @db.VarChar(100)
+    description   String       @db.Text
+    //Relations
+    modules       Modules[]
+    name          Module_Names @relation(fields: [module_name], references: [module_name])
+}
+
+model Module_Names {
+    //Primary Key
+    module_name String          @id @db.VarChar(100)
+    //Relations
+    details     Module_Details?
+}
