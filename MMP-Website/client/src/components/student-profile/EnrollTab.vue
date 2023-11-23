@@ -161,7 +161,6 @@ export default {
                 });
         },
         clickEnroll(module, index) {
-            console.log(module);
             this.module_name = module.details.module_name;
             this.school_year = module.school_year;
             this.showEnrollmentPopup = true;

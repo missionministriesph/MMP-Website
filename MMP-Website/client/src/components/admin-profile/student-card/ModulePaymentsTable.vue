@@ -354,7 +354,6 @@ export default {
         async updateData() {
             this.errored_edits = [];
             for (const index of this.editedIndices) {
-                console.table(this.displayData[index]);
                 const value = {
                     status: this.displayData[index].bill.status,
                     fee: this.displayData[index].bill.fee,

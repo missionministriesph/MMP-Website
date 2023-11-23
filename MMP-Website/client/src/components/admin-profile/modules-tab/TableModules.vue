@@ -64,7 +64,9 @@ import axios from "axios";
                                 :value="teacher.teacher_id"
                                 :selected="teacher.teacher_id === module.teacher.teacher_id"
                             >
-                                {{ formatName(teacher.last_name, teacher.first_name) }} ({{ teacher.teacher_id }})
+                                {{ formatName(teacher.last_name, teacher.first_name) }} ({{
+                                    teacher.teacher_id
+                                }})
                             </option>
                         </select>
                     </td>
@@ -172,8 +174,6 @@ export default {
                     // Store data
                     this.moduleArray = data;
                     this.baseModuleArray = duplicate(this.moduleArray);
-                    console.table(this.moduleArray)
-                    console.table(this.baseModuleArray)
                 })
                 // If unsuccessful
                 .catch((error) => {
@@ -221,7 +221,6 @@ export default {
         },
         // Add new module
         async addNewModule(data) {
-            console.table(data)
             await this.$axios
                 .post("/modules/", data)
                 .then(() => {

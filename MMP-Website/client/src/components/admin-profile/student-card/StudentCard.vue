@@ -931,7 +931,6 @@ export default {
                 .get(`/students/id/${this.studentId}`)
                 .then(({ data }) => {
                     this.student = data;
-                    console.log(this.student);
                 })
                 .catch((error) => {
                     console.log(error);

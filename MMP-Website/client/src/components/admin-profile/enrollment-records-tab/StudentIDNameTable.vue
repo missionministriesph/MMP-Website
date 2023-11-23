@@ -75,7 +75,6 @@ export default {
     },
     methods: {
         async getStudentArray() {
-            console.log(this.filter);
             switch (this.filter) {
                 case "All Students":
                     this.getAllStudents();
@@ -125,7 +124,6 @@ export default {
                 // If successful
                 .then(({ data }) => {
                     // Store data
-                    console.table(data);
                     this.studentArray = data;
                 })
                 // If unsuccessful
@@ -134,12 +132,10 @@ export default {
                 });
         },
         async getModuleSpecificStudents() {
-            console.log(this.selectedModule);
             await this.$axios
                 .get(`/students/module/${this.selectedModule}`) // If successful
                 .then(({ data }) => {
                     // Store data
-                    console.table(data);
                     this.studentArray = data;
                 })
                 // If unsuccessful

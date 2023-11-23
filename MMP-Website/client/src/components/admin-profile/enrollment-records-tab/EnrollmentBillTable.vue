@@ -224,7 +224,6 @@ export default {
                 .then(({ data }) => {
                     // Store data
                     this.billArray = data;
-                    console.log(this.billArray);
                 })
                 // If unsuccessful
                 .catch((error) => {

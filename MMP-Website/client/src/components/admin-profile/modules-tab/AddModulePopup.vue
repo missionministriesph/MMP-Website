@@ -91,7 +91,6 @@ defineEmits(["on-confirm", "on-exit"]);
                                     >
                                         {{ module.module_name }}
                                     </option>
-                                    
                                 </select>
                             </div>
                         </div>
@@ -130,7 +129,9 @@ defineEmits(["on-confirm", "on-exit"]);
                                         :key="teacher.teacher_id"
                                         :value="teacher.teacher_id"
                                     >
-                                        {{ formatName(teacher.last_name, teacher.first_name) }} ({{ teacher.teacher_id }})
+                                        {{ formatName(teacher.last_name, teacher.first_name) }} ({{
+                                            teacher.teacher_id
+                                        }})
                                     </option>
                                 </select>
                             </div>
@@ -233,8 +234,7 @@ export default {
                             module_name: module.module_name,
                             program: module.program,
                         };
-                    })
-                    console.table(this.moduleArray)
+                    });
                 })
                 // If unsuccessful
                 .catch((error) => {
@@ -253,7 +253,7 @@ export default {
                             first_name: teacher.first_name,
                             last_name: teacher.last_name,
                         };
-                    })
+                    });
                 })
                 // If unsuccessful
                 .catch((error) => {
@@ -272,8 +272,7 @@ export default {
                     session_1: this.session_1,
                     session_2: this.session_2,
                 };
-                console.table(newModule)
-                this.$emit('on-confirm', newModule)
+                this.$emit("on-confirm", newModule);
             }
         },
         validateForm() {
