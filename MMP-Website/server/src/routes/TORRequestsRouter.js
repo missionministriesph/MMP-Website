@@ -333,7 +333,7 @@ TORRequestsRouter.post("/", validateTORRequestReqBody(), async (req, res) => {
         });
 
         // Send email to admin
-        sendEmail(adminTORRequestEmail(`${requestingStudent.first_name} ${requestingStudent.middle_name} ${requestingStudent.last_name}`, requestingStudent.email, tor_request.student_id, tor_request.request_date))
+        sendEmail(adminTORRequestEmail(`${requestingStudent.first_name} ${requestingStudent.last_name}`, requestingStudent.email, tor_request.student_id, tor_request.request_date))
 
         res.status(200).send({ message: "Create successful" });
     } catch (error) {

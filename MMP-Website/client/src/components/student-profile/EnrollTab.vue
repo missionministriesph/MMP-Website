@@ -12,8 +12,7 @@ import { formatDate, formatName, formatEnum } from "../../util/helpers";
 
 <template>
     <LoadingSpinner v-if="!render" />
-    <div v-else
-    class="w-full grid">
+    <div v-else class="w-full grid">
         <h1 class="text-4xl font-bold mb-4">Enroll in Additional Modules</h1>
         <h2 class="text-xl font-semibold mb-4">Available Modules</h2>
         <div class="overflow-x-auto shadow-md rounded-lg mb-10">
@@ -22,7 +21,7 @@ import { formatDate, formatName, formatEnum } from "../../util/helpers";
                     class="sticky top-0 text-xs text-white uppercase bg-highlight dark:bg-gray-700 dark:text-gray-400"
                 >
                     <tr>
-                        <th scope="col" class="px-6 py-3">Title</th>
+                        <th scope="col" class="px-6 py-3">Module Name</th>
                         <th scope="col" class="px-6 py-3">Track</th>
                         <th scope="col" class="px-6 py-3">Teacher</th>
                         <th scope="col" class="px-6 py-3">Session 1</th>
@@ -52,17 +51,17 @@ import { formatDate, formatName, formatEnum } from "../../util/helpers";
                         </td>
                     </tr>
                     <tr
-                        v-for="module in enrollableModulesArray"
+                        v-for="(module, index) in enrollableModulesArray"
                         class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-200"
                     >
                         <th
                             scope="row"
                             class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                         >
-                            {{ module.module_name }}
+                            {{ module.details.module_name }}
                         </th>
                         <td class="px-6 py-4">
-                            {{ formatEnum(module.program) }}
+                            {{ formatEnum(module.details.program) }}
                         </td>
                         <td class="px-6 py-4">
                             {{ formatName(module.teacher.last_name, module.teacher.first_name) }}
@@ -76,7 +75,7 @@ import { formatDate, formatName, formatEnum } from "../../util/helpers";
                         <td class="px-6 py-4">
                             <button
                                 type="button"
-                                @click="clickEnroll(module)"
+                                @click="clickEnroll(module, index)"
                                 class="font-medium text-highlight_hover dark:text-blue-500 hover:underline"
                             >
                                 Enroll
@@ -102,7 +101,7 @@ import { formatDate, formatName, formatEnum } from "../../util/helpers";
         v-if="showSuccessPopup"
         title="Enrollment Request Successful."
         description="Your enrollment request has been sent."
-        accepted=true
+        accepted="true"
         exit-text="Close"
         @on-exit="showSuccessPopup = false"
     />
@@ -142,6 +141,8 @@ export default {
             showSuccessPopup: false,
             showExistsPopup: false,
             showErrorPopup: false,
+            // Index
+            index: null,
         };
     },
     methods: {
@@ -159,10 +160,12 @@ export default {
                     console.log(error);
                 });
         },
-        clickEnroll(module) {
-            this.module_name = module.module_name;
+        clickEnroll(module, index) {
+            console.log(module);
+            this.module_name = module.details.module_name;
             this.school_year = module.school_year;
             this.showEnrollmentPopup = true;
+            this.index = index;
         },
         // Enroll Student into Module
         async enrollModule() {
@@ -176,10 +179,11 @@ export default {
                 })
                 // If successful
                 .then((data) => {
-                    console.log(data);
                     // Show success popup and close enrollment popup
                     this.showSuccessPopup = true;
                     this.showEnrollmentPopup = false;
+                    this.enrollableModulesArray.splice(this.index, 1);
+                    this.index = null;
                 })
                 // If unsuccessful
                 .catch((error) => {
@@ -194,10 +198,9 @@ export default {
         },
     },
     async created() {
-        await this.getEnrollableModules()
-            .then(() => {
-                this.render = true;
-            });
+        await this.getEnrollableModules().then(() => {
+            this.render = true;
+        });
     },
 };
 </script>

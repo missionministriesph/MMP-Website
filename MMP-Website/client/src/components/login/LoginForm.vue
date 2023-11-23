@@ -1,4 +1,7 @@
 <template>
+    <div class="fixed top-1/2">
+        <LoadingSpinner v-if="loading" />
+    </div>
     <div
         class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700"
     >
@@ -26,7 +29,7 @@
                         v-model="user_id"
                     />
                     <div class="input-errors" v-if="errors['id']">
-                        <div class="block mb-2 text-sm font-medium text-highlight">
+                        <div class="block mb-2 text-sm font-medium text-red-500">
                             {{ errors["id"] }}
                         </div>
                     </div>
@@ -74,7 +77,7 @@
                 <button
                     type="submit"
                     class="w-full text-white bg-highlight hover:bg-highlight_hover focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-                    @click="submitForm()"
+                    @click="loading = true; submitForm()"
                 >
                     Sign in
                 </button>
@@ -103,21 +106,22 @@
         title="Invalid Login Credentials."
         description="Please follow the form guides."
         exit-text="Close"
-        @on-exit="showInvalidPopup = false"
+        @on-exit="showInvalidPopup = false; loading = false"
     />
 
     <MessagePopup
         v-if="showErrorPopup"
         title="Failed to Login"
-        description="Please ensure that Admin has verified your account."
+        :description="description"
         exit-text="Close"
-        @on-exit="showErrorPopup = false"
+        @on-exit="showErrorPopup = false; loading = false"
     />
 </template>
 
 <script setup>
 import MessagePopup from "../../components/common/MessagePopup.vue";
 import { useCredentialsStore } from "../../store/store";
+import LoadingSpinner from "../common/LoadingSpinner.vue";
 </script>
 
 <script>
@@ -134,6 +138,8 @@ export default {
             // Popups
             showInvalidPopup: false,
             showErrorPopup: false,
+            //Loading
+            loading: false,
         };
     },
     methods: {
@@ -181,6 +187,7 @@ export default {
                 .catch((error) => {
                     console.log(error);
                     this.showErrorPopup = true;
+                    this.description = error.response.data.error;
                 });
         },
         // Validators

@@ -69,16 +69,15 @@ export function downloadCSV(csvString, filename) {
 export function formatCSVString(str) {
     // If string is empty, return empty string
     if (str == null || str.length === 0) return "";
+
+    let isEdited = false;
+
     // If string contains a double quote, replace with two double quotes
-    if (str.indexOf('"') !== -1) str = str.replace(/"/g, '""');
-    // If string contains a comma, replace with
-    if (str.indexOf(",") !== -1) str = str.replace(/,/g, ",");
-    // If string contains a newline, replace with \\n
-    if (str.indexOf("\n") !== -1) str = str.replace(/\n/g, "\\n");
-    // If string contains a carriage return, replace with \\r
-    if (str.indexOf("\r") !== -1) str = str.replace(/\r/g, "\\r");
-    // If string contains a tab, replace with \\t
-    if (str.indexOf("\t") !== -1) str = str.replace(/\t/g, "\\t");
+    if (str.indexOf('"') !== -1) {
+        str = str.replace(/"/g, '""');
+        isEdited = true;
+    }
+
     // Otherwise, return string
     return `"${str}"`;
 }
@@ -114,6 +113,7 @@ export async function downloadZIP(zipString, filename) {
     document.body.removeChild(downloadLink);
 }
 
+//Helper function to format null in text fields
 export function formatText(text) {
     if (text === null) {
         return "";
@@ -121,3 +121,48 @@ export function formatText(text) {
         return text;
     }
 }
+
+//Helper function to duplicate objects (Note: This only handles primitive types, date objects, regular objects, and arrays. All other inputs will result in undefined behavior)
+export const duplicate = (data) => {
+    if (typeof data === "object") {
+        let duplicated;
+        if (Object.prototype.toString.call(data) === "[object Array]") {
+            duplicated = [];
+
+            for (const entry of data) {
+                let handler = {};
+                for (const [key, value] of Object.entries(entry)) {
+                    if (value === null || value === undefined) {
+                        handler[key] = null;
+                    } else if (
+                        typeof value === "object" &&
+                        Object.prototype.toString.call(value) !== "[object Date]"
+                    ) {
+                        handler[key] = duplicate(value);
+                    } else {
+                        handler[key] = value;
+                    }
+                }
+                duplicated.push(handler);
+            }
+        } else {
+            duplicated = {};
+            for (const [key, value] of Object.entries(data)) {
+                if (value === null || value === undefined) {
+                    duplicated[key] = null;
+                } else if (
+                    typeof value === "object" &&
+                    Object.prototype.toString.call(value) !== "[object Date]"
+                ) {
+                    duplicated[key] = duplicate(value);
+                } else {
+                    duplicated[key] = value;
+                }
+            }
+        }
+
+        return duplicated;
+    } else {
+        return data;
+    }
+};

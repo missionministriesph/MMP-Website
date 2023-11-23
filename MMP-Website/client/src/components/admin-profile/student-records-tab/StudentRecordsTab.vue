@@ -45,7 +45,7 @@ defineEmits(["select-module"]);
                     type="button"
                     class="w-full sm:w-auto ml-auto mr-10 md:px-10 px-3 py-3 mt-5 text-base font-medium text-center text-white bg-highlight rounded-lg hover:bg-highlight_hover"
                 >
-                    Download All Data of Database (.zip)
+                    Download All Module Enrollments Data (.zip)
                 </button>
             </div>
         </div>
@@ -83,11 +83,11 @@ export default {
         },
         async downloadDatabase() {
             await this.$axios
-                .get(`/download/all`)
+                .get(`/download/modules`)
                 // If successful
                 .then(({ data }) => {
                     // Download data
-                    downloadZIP(data, "database.zip");
+                    downloadZIP(data, "modules data.zip");
                 })
                 // If unsuccessful
                 .catch((error) => {

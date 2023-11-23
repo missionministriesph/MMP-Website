@@ -1,9 +1,13 @@
 <script setup>
 import MessagePopup from "../../components/common/MessagePopup.vue";
 import ErrorMessagePopup from "../../components/common/ErrorMessagePopup.vue";
+import LoadingSpinner from "../../components/common/LoadingSpinner.vue";
 </script>
 
 <template>
+    <div class="fixed top-1/2">
+        <LoadingSpinner v-if="loading" />
+    </div>
     <div
         class="w-full bg-white rounded-lg mx-auto p-4 shadow dark:border sm:max-w-md xl:p-0 md:max-p-4 lg:p-8 mb-6"
     >
@@ -30,7 +34,7 @@ import ErrorMessagePopup from "../../components/common/ErrorMessagePopup.vue";
                         v-model="firstName"
                     />
                     <div class="input-errors" v-if="errors.firstName">
-                        <div class="block mb-2 text-sm font-medium text-highlight">
+                        <div class="block mb-2 text-sm font-medium text-red-500">
                             {{ errors.firstName }}
                         </div>
                     </div>
@@ -51,7 +55,7 @@ import ErrorMessagePopup from "../../components/common/ErrorMessagePopup.vue";
                         v-model="lastName"
                     />
                     <div class="input-errors" v-if="errors.lastName">
-                        <div class="block mb-2 text-sm font-medium text-highlight">
+                        <div class="block mb-2 text-sm font-medium text-red-500">
                             {{ errors.lastName }}
                         </div>
                     </div>
@@ -72,7 +76,7 @@ import ErrorMessagePopup from "../../components/common/ErrorMessagePopup.vue";
                         v-model="middleName"
                     />
                     <div class="input-errors" v-if="errors.middleName">
-                        <div class="block mb-2 text-sm font-medium text-highlight">
+                        <div class="block mb-2 text-sm font-medium text-red-500">
                             {{ errors.middleName }}
                         </div>
                     </div>
@@ -92,7 +96,7 @@ import ErrorMessagePopup from "../../components/common/ErrorMessagePopup.vue";
                         v-model="email"
                     />
                     <div class="input-errors" v-if="errors.email">
-                        <div class="block mb-2 text-sm font-medium text-highlight">
+                        <div class="block mb-2 text-sm font-medium text-red-500">
                             {{ errors.email }}
                         </div>
                     </div>
@@ -111,7 +115,7 @@ import ErrorMessagePopup from "../../components/common/ErrorMessagePopup.vue";
                         v-model="password"
                     />
                     <div class="input-errors" v-if="errors.password">
-                        <div class="block mb-2 text-sm font-medium text-highlight">
+                        <div class="block mb-2 text-sm font-medium text-red-500">
                             {{ errors.password }}
                         </div>
                     </div>
@@ -130,7 +134,7 @@ import ErrorMessagePopup from "../../components/common/ErrorMessagePopup.vue";
                         v-model="confirmPassword"
                     />
                     <div class="input-errors" v-if="errors.confirmPassword">
-                        <div class="block mb-2 text-sm font-medium text-highlight">
+                        <div class="block mb-2 text-sm font-medium text-red-500">
                             {{ errors.confirmPassword }}
                         </div>
                     </div>
@@ -154,7 +158,7 @@ import ErrorMessagePopup from "../../components/common/ErrorMessagePopup.vue";
                     </label>
                 </div>
                 <div class="input-errors" v-if="errors.agreeTerms">
-                    <div class="block mb-2 text-sm font-medium text-highlight">
+                    <div class="block mb-2 text-sm font-medium text-red-500">
                         {{ errors.agreeTerms }}
                     </div>
                 </div>
@@ -163,7 +167,7 @@ import ErrorMessagePopup from "../../components/common/ErrorMessagePopup.vue";
                     <button
                         type="submit"
                         class="text-white bg-highlight hover:bg-highlight_hover focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                        @click="submitForm"
+                        @click="loading = true; submitForm()"
                     >
                         Sign Up
                     </button>
@@ -193,7 +197,7 @@ import ErrorMessagePopup from "../../components/common/ErrorMessagePopup.vue";
         title="Invalid Signup Credentials."
         description="Please follow the form guides."
         exit-text="Close"
-        @on-exit="showInvalidPopup = false"
+        @on-exit="showInvalidPopup = false; loading = false"
     />
 
     <MessagePopup
@@ -205,6 +209,7 @@ import ErrorMessagePopup from "../../components/common/ErrorMessagePopup.vue";
         @on-exit="
             showSuccessPopup = false;
             $router.push('/');
+            loading = false;
         "
     />
 
@@ -213,7 +218,7 @@ import ErrorMessagePopup from "../../components/common/ErrorMessagePopup.vue";
         title="Email is already in use."
         description="Please use a different email or Login."
         exit-text="Close"
-        @on-exit="showUsedEmailPopup = false"
+        @on-exit="showUsedEmailPopup = false; loading = false"
     />
 
     <ErrorMessagePopup
@@ -221,7 +226,7 @@ import ErrorMessagePopup from "../../components/common/ErrorMessagePopup.vue";
         title="Something went wrong."
         description="Please try again."
         exit-text="Close"
-        @on-exit="showErrorPopup = false"
+        @on-exit="showErrorPopup = false; loading = false"
     />
 </template>
 
@@ -244,6 +249,8 @@ export default {
             showSuccessPopup: false,
             showUsedEmailPopup: false,
             showErrorPopup: false,
+            //Loading
+            loading: false,
         };
     },
     methods: {

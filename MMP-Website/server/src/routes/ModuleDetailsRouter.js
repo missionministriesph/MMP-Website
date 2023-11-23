@@ -69,7 +69,11 @@ ModuleDetailsRouter.get("/all", async (req, res) => {
 
     try {
         //Get names
-        const names = await prisma.Module_Names.findMany().orderBy({ module_name: "asc" });
+        const names = await prisma.Module_Names.findMany({
+            orderBy: {
+                module_name: "asc",
+            }
+    });
 
         res.status(200).send(names);
     } catch (error) {
@@ -86,7 +90,11 @@ ModuleDetailsRouter.get("/all/details", async (req, res) => {
 
     try {
         //Get records
-        const records = await prisma.Module_Details.findMany().orderBy({ module_name: "asc" });
+        const records = await prisma.Module_Details.findMany({
+            orderBy: {
+                module_name: "asc",
+            }
+    })
 
         res.status(200).send(records);
     } catch (error) {

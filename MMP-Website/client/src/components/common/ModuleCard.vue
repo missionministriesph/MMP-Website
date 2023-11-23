@@ -1,5 +1,5 @@
 <template>
-    <div class="flex items-center justify-center w-56 h-36 bg-white p-4 border border-gray-300 rounded shadow-md">
+    <div class="flex items-center justify-center w-full h-36 bg-white p-4 border border-gray-300 rounded shadow-md">
         <!-- add more info for the card after this part-->
         <h3 class="text-lg font-semibold mb-3">
             {{ moduleName }}

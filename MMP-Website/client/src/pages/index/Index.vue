@@ -20,10 +20,15 @@
                     <router-link
                         to="/student/signup"
                         class="bg-highlight hover:bg-highlight_hover text-white font-bold py-2 px-2 rounded mb-2"
+                        v-if="!store.isLoggedIn"
                     >
                         Apply Now
                     </router-link>
-                    <router-link to="/login" class="text-highlight hover:text-highlight_hover">
+                    <router-link
+                        to="/login"
+                        class="text-highlight hover:text-highlight_hover"
+                        v-if="!store.isLoggedIn"
+                    >
                         Already have an account? Log In
                     </router-link>
                 </div>
@@ -45,6 +50,9 @@
 <script setup>
 import Cover from "../../components/index/Cover.vue";
 import Carousel from "../../components/index/Carousel.vue";
+import { useCredentialsStore } from "../../store/store";
+
+const store = useCredentialsStore();
 </script>
 
 <!-- Mobile responsiveness -->

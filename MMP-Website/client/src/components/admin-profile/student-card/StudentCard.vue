@@ -8,7 +8,7 @@ import PromptPopup from "../../common/PromptPopup.vue";
 import PaymentInputPopup from "../../common/PaymentInputPopup.vue";
 import EditPaymentPopup from "../../common/EditPaymentPopup.vue";
 // Helpers
-import { formatEnum, downloadCSV, formatCSVString } from "../../../util/helpers";
+import { formatEnum, downloadCSV, downloadZIP, duplicate } from "../../../util/helpers";
 // Props
 defineProps({
     studentId: String,
@@ -506,7 +506,7 @@ defineEmits(["on-back"]);
                         Mobile Number
                     </div>
                     <input
-                        type="number"
+                        type="text"
                         v-model="student.mobile_number"
                         :disabled="!editMode"
                         placeholder="Mobile Number"
@@ -611,7 +611,7 @@ defineEmits(["on-back"]);
                         Mobile Number
                     </div>
                     <input
-                        type="number"
+                        type="string"
                         v-model="student.emergency_mobile_number"
                         :disabled="!editMode"
                         placeholder="Emergency Mobile Number"
@@ -829,6 +829,101 @@ export default {
             payments: null,
         };
     },
+    computed: {
+        first_name() {
+            return this.student.first_name;
+        },
+        last_name() {
+            return this.student.last_name;
+        },
+        middle_name() {
+            return this.student.middle_name;
+        },
+        email() {
+            return this.student.email;
+        },
+        address() {
+            return this.student.address;
+        },
+        mobile_number() {
+            return this.student.mobile_number;
+        },
+        landline() {
+            return this.student.landline;
+        },
+        birthdate() {
+            return this.student.birthdate;
+        },
+        birthplace() {
+            return this.student.birthplace;
+        },
+        nationality() {
+            return this.student.nationality;
+        },
+        gender() {
+            return this.student.gender;
+        },
+        civil_status() {
+            return this.student.civil_status;
+        },
+        no_of_children() {
+            return this.student.no_of_children;
+        },
+        occupation() {
+            return this.student.occupation;
+        },
+        school() {
+            return this.student.school;
+        },
+        admin() {
+            return this.student.admin;
+        },
+        is_partner_school() {
+            return this.student.is_partner_school;
+        },
+        church() {
+            return this.student.church;
+        },
+        pastor() {
+            return this.student.pastor;
+        },
+        gradeschool() {
+            return this.student.gradeschool;
+        },
+        highschool() {
+            return this.student.highschool;
+        },
+        college() {
+            return this.student.college;
+        },
+        college_course() {
+            return this.student.college_course;
+        },
+        graduate() {
+            return this.student.graduate;
+        },
+        graduate_course() {
+            return this.student.graduate_course;
+        },
+        others() {
+            return this.student.others;
+        },
+        essay() {
+            return this.student.essay;
+        },
+        emergency_name() {
+            return this.student.emergency_name;
+        },
+        emergency_address() {
+            return this.student.emergency_address;
+        },
+        emergency_mobile_number() {
+            return this.student.emergency_mobile_number;
+        },
+        track() {
+            return this.student.track;
+        },
+    },
     methods: {
         // Get student info
         async getStudentInfo() {
@@ -871,11 +966,11 @@ export default {
         },
         switchToEditMode() {
             this.editMode = true;
-            this.backupStudent = JSON.parse(JSON.stringify(this.student));
+            this.backupStudent = duplicate(this.student);
         },
         cancelChanges() {
             this.editMode = false;
-            this.student = JSON.parse(JSON.stringify(this.backupStudent));
+            this.student = duplicate(this.backupStudent);
             this.errors = {};
             this.currentPopup = null;
         },
@@ -954,51 +1049,13 @@ export default {
                 return;
             }
 
-            let studentDataCSV =
-                "Student Id, First Name, Last Name, Middle Name, Address, Mobile Number, Landline, Email, Birthdate, Birthplace, Nationality, Gender, Civil Status, No Of Children, School, Occupation, Admin, Church, Pastor, Is Partner School, Gradeschool, Highschool, College, College Course, Graduate, Graduate Course, Others, Essay, Emergency Name, Emergency Address, Emergency Mobile Number, Status, Track\n";
-
-            studentDataCSV += `${this.student_id}, ${this.student.first_name}, ${
-                this.student.last_name
-            }, ${this.student.middle_name}, ${this.student.address}, ${
-                this.student.mobile_number
-            }, ${this.student.landline}, ${this.student.email}, ${this.student.birthdate}, ${
-                this.student.birthplace
-            }, ${this.student.nationality}, ${this.student.gender}, ${this.student.civil_status}, ${
-                this.student.no_of_children
-            }, ${this.student.school}, ${this.student.occupation}, ${this.student.admin}, ${
-                this.student.church
-            }, ${this.student.pastor}, ${this.student.is_partner_school}, ${
-                this.student.gradeschool
-            }, ${this.student.highschool}, ${this.student.college}, ${
-                this.student.college_course
-            }, ${this.student.graduate}, ${this.student.graduate_course}, ${
-                this.student.others
-            }, ${formatCSVString(this.student.essay)}, ${this.student.emergency_name}, ${
-                this.student.emergency_address
-            }, ${this.student.emergency_mobile_number}, ${this.student.password}, ${
-                this.student.status
-            }, ${this.student.track}\r\n`;
-
-            // Download student info
-            downloadCSV(
-                studentDataCSV,
-                `${this.student.student_id} ${this.student.first_name} ${this.student.last_name} - Student Data.csv`
-            );
-
-            // Download module enrollment array
             await this.$axios
-                .get(`/module_enrollments/student/${this.studentId}`)
+                .get(`/download/student/${this.studentId}`)
                 // If successful
                 .then(({ data }) => {
-                    // Format data as csv
-                    let moduleEnrollmentsCSV =
-                        "Module Name, School Year, Program, Teacher First Name, Teacher Last Name, Session 1, Session 2, Status, Grade, Number Of Absences, Remarks\n";
-                    data.forEach((entry) => {
-                        moduleEnrollmentsCSV += `${entry.module.module_name}, ${entry.module.school_year}, ${entry.module.program}, ${entry.module.teacher.first_name}, ${entry.module.teacher.last_name}, ${entry.module.session_1}, ${entry.module.session_2}, ${entry.status}, ${entry.grade}, ${entry.no_of_absences}, ${entry.remarks}\r\n`;
-                    });
-                    downloadCSV(
-                        moduleEnrollmentsCSV,
-                        `${this.student.student_id} ${this.student.first_name} ${this.student.last_name} - Enrollment Data.csv`
+                    downloadZIP(
+                        data,
+                        `${this.student.student_id} ${this.student.first_name} ${this.student.last_name} - Student Data.zip`
                     );
                 })
                 // If unsuccessful
@@ -1386,64 +1443,64 @@ export default {
         },
     },
     watch: {
-        "student.first_name": function () {
+        first_name() {
             this.validateFirstName();
         },
-        "student.last_name": function () {
+        last_name() {
             this.validateLastName();
         },
-        "student.middle_name": function () {
+        middle_name() {
             this.validateMiddleName();
         },
-        "student.email": function () {
+        email() {
             this.validateEmail();
         },
-        "student.address": function () {
+        address() {
             this.validateAddress();
         },
-        "student.mobile_number": function () {
+        mobile_number() {
             this.validateMobileNumber();
         },
-        "student.landline": function () {
+        landline() {
             this.validateLandline();
         },
-        "student.birthdate": function () {
+        birthdate() {
             this.validateBirthdate();
         },
-        "student.birthplace": function () {
+        birthplace() {
             this.validateBirthplace();
         },
-        "student.nationality": function () {
+        nationality() {
             this.validateNationality();
         },
-        "student.gender": function () {
+        gender() {
             this.validateGender();
         },
-        "student.civil_status": function () {
+        civil_status() {
             this.validateCivilStatus();
         },
-        "student.no_of_children": function () {
+        no_of_children() {
             this.validateNoOfChildren();
         },
-        "student.occupation": function () {
+        occupation() {
             this.validateOccupation();
         },
-        "student.school": function () {
+        school() {
             this.validateSchool();
         },
-        "student.admin": function () {
+        admin() {
             this.validateAdmin();
         },
-        "student.is_partner_school": function () {
+        is_partner_school() {
             this.validateIsPartner();
         },
-        "student.church": function () {
+        church() {
             this.validateChurch();
         },
-        "student.pastor": function () {
+        pastor() {
             this.validatePastor();
         },
-        "student.gradeschool": function () {
+        gradeschool() {
             this.validateGradeschool();
             this.validateHighschool();
             this.validateCollege();
@@ -1451,7 +1508,7 @@ export default {
             this.validateCollegeCourse();
             this.validateGraduateCourse();
         },
-        "student.highschool": function () {
+        highschool() {
             this.validateGradeschool();
             this.validateHighschool();
             this.validateCollege();
@@ -1459,7 +1516,7 @@ export default {
             this.validateCollegeCourse();
             this.validateGraduateCourse();
         },
-        "student.college": function () {
+        college() {
             this.validateGradeschool();
             this.validateHighschool();
             this.validateCollege();
@@ -1467,13 +1524,13 @@ export default {
             this.validateCollegeCourse();
             this.validateGraduateCourse();
         },
-        "student.college_course": function () {
+        college_course() {
             this.validateCollege();
             this.validateCollegeCourse();
             this.validateGraduate();
             this.validateGraduateCourse();
         },
-        "student.graduate": function () {
+        graduate() {
             this.validateGradeschool();
             this.validateHighschool();
             this.validateCollege();
@@ -1481,26 +1538,26 @@ export default {
             this.validateCollegeCourse();
             this.validateGraduateCourse();
         },
-        "student.graduate_course": function () {
+        graduate_course() {
             this.validateGraduate();
             this.validateGraduateCourse();
         },
-        "student.others": function () {
+        others() {
             this.validateOthers();
         },
-        "student.essay": function () {
+        essay() {
             this.validateEssay();
         },
-        "student.emergency_name": function () {
+        emergency_name() {
             this.validateEmergencyName();
         },
-        "student.emergency_address": function () {
+        emergency_address() {
             this.validateEmergencyAddress();
         },
-        "student.emergency_mobile_number": function () {
+        emergency_mobile_number() {
             this.validateEmergencyNumber();
         },
-        "student.track": function () {
+        track() {
             this.validateTrack();
         },
     },

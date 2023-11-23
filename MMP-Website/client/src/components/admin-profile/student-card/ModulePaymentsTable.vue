@@ -1,5 +1,5 @@
 <script setup>
-import { formatDate, formatEnum, addUnique, formatText } from "../../../util/helpers";
+import { formatDate, formatEnum, addUnique, formatText, duplicate } from "../../../util/helpers";
 import MessagePopup from "../../common/MessagePopup.vue";
 import BillInputPopup from "../../common/BillInputPopup.vue";
 import PromptPopup from "../../common/PromptPopup.vue";
@@ -244,7 +244,7 @@ defineEmits(["add-success", "delete-success"]);
                 addSuccess(bill);
             }
         "
-        @fail="currentPopup = editFail()"
+        @fail="currentPopup = 'error'"
     />
 
     <PromptPopup
@@ -353,12 +353,13 @@ export default {
     methods: {
         async updateData() {
             this.errored_edits = [];
-            for (const index in this.editedIndices) {
+            for (const index of this.editedIndices) {
+                console.table(this.displayData[index]);
                 const value = {
                     status: this.displayData[index].bill.status,
                     fee: this.displayData[index].bill.fee,
                     deductions: this.displayData[index].bill.deductions,
-                    issued_on: this.displayData[index].bill.issued_on,
+                    issued_on: formatDate(this.displayData[index].bill.issued_on),
                     billed_to: this.student_id,
                 };
 
@@ -379,7 +380,7 @@ export default {
         },
         switchToEditMode() {
             this.editMode = true;
-            this.unalteredCopy = JSON.parse(JSON.stringify(this.finance_info));
+            this.unalteredCopy = duplicate(this.finance_info);
         },
         saveChanges() {
             if (this.validate()) {
@@ -390,7 +391,7 @@ export default {
         },
         cancelChanges() {
             this.editMode = false;
-            this.displayData = JSON.parse(JSON.stringify(this.unalteredCopy));
+            this.displayData = duplicate(this.unalteredCopy);
             this.unalteredCopy = null;
             this.errors = {};
             this.edits = [];
@@ -587,7 +588,7 @@ export default {
         },
     },
     created() {
-        this.displayData = JSON.parse(JSON.stringify(this.finance_info));
+        this.displayData = duplicate(this.finance_info);
     },
     watch: {
         finance_info() {

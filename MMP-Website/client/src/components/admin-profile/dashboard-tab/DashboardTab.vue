@@ -2,6 +2,7 @@
 import FacultyTable from "./FacultyTable.vue";
 import TranscriptTable from "./TranscriptTable.vue";
 import StudentsTable from "./StudentsTable.vue";
+import EnrollmentsTable from "./EnrollmentsTable.vue";
 </script>
 
 <template>
@@ -20,6 +21,11 @@ import StudentsTable from "./StudentsTable.vue";
         <h2 class="text-2xl font-semibold mb-4">Transcript</h2>
         <div class="grid">
             <TranscriptTable :refresh-toggle="refreshToggle" />
+        </div>
+        <br /><br />
+        <h2 class="text-2xl font-semibold mb-4">Enrollments</h2>
+        <div class="grid">
+            <EnrollmentsTable />
         </div>
     </div>
 </template>

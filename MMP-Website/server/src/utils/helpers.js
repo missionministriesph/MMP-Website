@@ -61,3 +61,12 @@ export const generateFinancePKSegments = (list) => {
 
     return { first: rawPK.slice(0, 1), second: rawPK.slice(1) };
 };
+
+// Helper function to format an enum
+export function formatEnum(val) {
+    if (val == null) return "";
+    return val
+        .split("_")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(" ");
+}

@@ -9,7 +9,7 @@ defineProps({
 
 <template>
     <LoadingSpinner v-if="!render" />
-    <div v-else class="-mt-12 overflow-x-auto rounded-lg overflow-y-auto max-h-96">
+    <div v-else class="-mt-12 overflow-x-auto rounded-lg overflow-y-auto">
         <div class="grid">
             <button
                 @click="update()"
@@ -147,12 +147,12 @@ export default {
             }
         },
         //Update DB
-        update() {
+        async update() {
             this.getEditList();
             let errorsID = [];
 
             for (const data of this.editArray) {
-                this.$axios
+                await this.$axios
                     .patch(`/tor_requests/${data.req_id}`, { status: data.status })
                     .catch((error) => {
                         errorsID.push(data.req_id);
@@ -170,7 +170,7 @@ export default {
                 });
                 this.description = this.description.slice(0, this.description.length - 2);
                 this.showUpdatePopup = true;
-                this.getTORs();
+                await this.getTORs();
             } else {
                 this.title = "All updates successful";
                 this.description = "Request ID's:  ";
@@ -181,7 +181,7 @@ export default {
                 this.description = this.description.slice(0, this.description.length - 2);
                 this.description += " have been successfully edited";
                 this.showUpdatePopup = true;
-                this.getTORs();
+                await this.getTORs();
             }
         },
     },

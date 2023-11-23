@@ -1,13 +1,18 @@
 <script setup>
-import { formatDate, formatName, formatEnum, addUnique } from "@/util/helpers";
+import { formatDate, formatName, formatEnum, addUnique, duplicate } from "@/util/helpers";
 import MessagePopup from "../../common/MessagePopup.vue";
+import ErrorMessagePopup from "../../common/ErrorMessagePopup.vue";
 import LoadingSpinner from "../../common/LoadingSpinner.vue";
+import AddModulePopup from "./AddModulePopup.vue";
+import axios from "axios";
 </script>
 
 <template>
     <LoadingSpinner v-if="!render" />
     <div v-else class="overflow-x-auto shadow-md rounded-lg overflow-y-auto max-h-96">
-        <table class="w-full text-gray-500 dark:text-gray-400 md:text-xl text-center min-w-[1400px]">
+        <table
+            class="w-full text-gray-500 dark:text-gray-400 md:text-xl text-center min-w-[1400px]"
+        >
             <thead
                 class="text-xs text-white uppercase bg-highlight dark:bg-gray-700 dark:text-gray-400 sticky top-0"
             >
@@ -37,12 +42,12 @@ import LoadingSpinner from "../../common/LoadingSpinner.vue";
                     class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
                 >
                     <td
-                        class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+                        class="px-3 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                     >
-                        {{ module.module_name }}
+                        {{ module.details.module_name }} {{ module.school_year }}
                     </td>
                     <td
-                        class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+                        class="px-3 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                     >
                         <!-- Dropdown for Teachers -->
                         <select
@@ -59,12 +64,12 @@ import LoadingSpinner from "../../common/LoadingSpinner.vue";
                                 :value="teacher.teacher_id"
                                 :selected="teacher.teacher_id === module.teacher.teacher_id"
                             >
-                                {{ formatName(teacher.last_name, teacher.first_name) }}
+                                {{ formatName(teacher.last_name, teacher.first_name) }} ({{ teacher.teacher_id }})
                             </option>
                         </select>
                     </td>
                     <td class="px-6 py-3 font-medium">
-                        {{ getProgram(module.program) }}
+                        {{ getProgram(module.details.program) }}
                     </td>
                     <td class="px-6 py-3 font-medium">
                         {{ formatDate(module.session_1) }}
@@ -79,7 +84,7 @@ import LoadingSpinner from "../../common/LoadingSpinner.vue";
 
     <div class="flex items-center justify-center">
         <button
-            @click="addNewModule"
+            @click="currentPopup = 'add-module'"
             class="w-40 py-3 mt-5 mr-2 text-base font-medium text-center text-white bg-highlight rounded-lg hover:bg-highlight_hover"
         >
             Add New
@@ -93,23 +98,52 @@ import LoadingSpinner from "../../common/LoadingSpinner.vue";
     </div>
 
     <MessagePopup
-        v-if="showUpdatePopup"
+        v-if="currentPopup === 'update-success'"
         title="Assignment Successful"
         description="Assigning of teachers was successfully executed"
         :accepted="true"
         exit-text="Close"
-        @on-exit="showUpdatePopup = false"
+        @on-exit="currentPopup = null"
+    />
+
+    <ErrorMessagePopup
+        v-if="currentPopup === 'update-error'"
+        title="Update Failed"
+        :description="`Something went wrong with executing the update. Please try again.`"
+        exit-text="Close"
+        @on-exit="currentPopup = null"
+    />
+
+    <AddModulePopup
+        v-if="currentPopup === 'add-module'"
+        @on-confirm="addNewModule($event)"
+        @on-exit="currentPopup = null"
     />
 
     <MessagePopup
-        v-if="editErrorPopup"
-        title="Update Failed"
-        :description="`Something went wrong with executing the update. Please try again.`"
-        :accepted="false"
+        v-if="currentPopup === 'add-module-success'"
+        title="Module Added"
+        :description="`Module was successfully added.`"
+        :accepted="true"
         exit-text="Close"
-        @on-exit="showErrorPopup = false"
+        @on-exit="currentPopup = null"
     />
 
+    <ErrorMessagePopup
+        v-if="currentPopup === 'add-module-exists'"
+        title="Module Already Exists"
+        :description="`The Module already exists.`"
+        exit-text="Close"
+        @on-exit="currentPopup = null"
+    />
+
+    <ErrorMessagePopup
+        v-if="currentPopup === 'add-module-error'"
+        title="Add Module Failed"
+        :description="`Something went wrong with adding the module. Please try again`"
+        exit-text="Close"
+        @on-exit="currentPopup = null"
+    />
 </template>
 
 <script>
@@ -125,8 +159,7 @@ export default {
             editedIndices: [],
             errorCount: 0,
             // Popups
-            editErrorPopup: false,
-            showUpdatePopup: false,
+            currentPopup: null, // update-success, update-error, add-module, add-module-success, add-module-exists, add-module-error
         };
     },
     methods: {
@@ -138,7 +171,9 @@ export default {
                 .then(({ data }) => {
                     // Store data
                     this.moduleArray = data;
-                    this.baseModuleArray = JSON.parse(JSON.stringify(this.moduleArray));
+                    this.baseModuleArray = duplicate(this.moduleArray);
+                    console.table(this.moduleArray)
+                    console.table(this.baseModuleArray)
                 })
                 // If unsuccessful
                 .catch((error) => {
@@ -164,7 +199,7 @@ export default {
             this.editedIndices.forEach(async (index) => {
                 await this.$axios
                     .patch(
-                        `/modules/teacher/${this.moduleArray[index].module_name}/${this.moduleArray[index].school_year}`,
+                        `/modules/teacher/${this.moduleArray[index].details.module_name}/${this.moduleArray[index].school_year}`,
                         {
                             teacher_id: this.moduleArray[index].teacher.teacher_id,
                         }
@@ -175,31 +210,32 @@ export default {
             });
 
             if (this.errorCount > 0) {
-                this.editErrorPopup = true;
+                this.currentPopup = "update-error";
             } else {
-                this.showUpdatePopup = true;
+                this.currentPopup = "update-success";
             }
-            this.baseModuleArray = JSON.parse(JSON.stringify(this.moduleArray));
+            this.baseModuleArray = duplicate(this.moduleArray);
         },
         getProgram(program) {
             return formatEnum(program);
         },
         // Add new module
-        addNewModule() {
-            // Create a new module object with default values or empty strings
-            const newModule = {
-                module_name: "",
-                teacher: {
-                    last_name: "",
-                    first_name: "",
-                },
-                program: "",
-                session_1: "",
-                session_2: "",
-            };
-
-            // Add the new module to the moduleArray
-            this.moduleArray.push(newModule);
+        async addNewModule(data) {
+            console.table(data)
+            await this.$axios
+                .post("/modules/", data)
+                .then(() => {
+                    this.getAllModules();
+                    this.currentPopup = "add-module-success";
+                })
+                .catch((error) => {
+                    console.log(error);
+                    if (error.response.data.error === "Module already exists") {
+                        this.currentPopup = "add-module-exists";
+                    } else {
+                        this.currentPopup = "add-module-error";
+                    }
+                });
         },
     },
     async created() {

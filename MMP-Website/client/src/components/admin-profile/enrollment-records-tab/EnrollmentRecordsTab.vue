@@ -65,6 +65,7 @@ export default {
             moduleOptions: [
                 "FOUNDATIONAL COURSES",
                 "Child and Development",
+                "Philosophical Foundations in ECE",
                 "Assessment of Learning and Development",
                 "Practicum 1",
                 "Curriculum in ECE",

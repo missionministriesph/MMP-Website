@@ -9,7 +9,7 @@ import PromptPopup from "./PromptPopup.vue";
     <nav class="bg-white md:max-p-4 fixed w-full z-50 top-0 left-0 border-b border-gray-200">
         <div class="w-screen flex flex-wrap items-center justify-between mx-auto p-4">
             <div class="flex items-center justify">
-                <router-link to="/" class="flex items-center">
+                <router-link :to="store.account_type? store.account_type.toLowerCase() : '/'" class="flex items-center">
                     <img src="https://i.imgur.com/yCabNBZ.png" class="h-8 mr-3" alt="MMP Logo" />
                     <span
                         class="hidden self-center text-2xl font-semibold whitespace-nowrap text-logo md:block"

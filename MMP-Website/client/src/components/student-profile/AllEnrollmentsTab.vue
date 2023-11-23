@@ -9,8 +9,7 @@ import { formatDate, formatName, formatEnum } from "../../util/helpers";
 
 <template>
     <LoadingSpinner v-if="!render" />
-    <div v-else
-        class="w-full grid">
+    <div v-else class="w-full grid">
         <h1 class="text-4xl font-bold mb-4">Enrollment History</h1>
         <h2 class="text-xl font-semibold mb-4">All Enrollments</h2>
 
@@ -20,7 +19,7 @@ import { formatDate, formatName, formatEnum } from "../../util/helpers";
                     class="sticky top-0 text-xs text-white uppercase bg-highlight dark:bg-gray-700 dark:text-gray-400"
                 >
                     <tr>
-                        <th scope="col" class="px-6 py-3">Title</th>
+                        <th scope="col" class="px-6 py-3">Module Name</th>
                         <th scope="col" class="px-6 py-3">Track</th>
                         <th scope="col" class="px-6 py-3">Teacher</th>
                         <th scope="col" class="px-6 py-3">Session 1</th>
@@ -31,7 +30,9 @@ import { formatDate, formatName, formatEnum } from "../../util/helpers";
                 </thead>
                 <tbody>
                     <tr
-                        v-if="allEnrolledModulesArray === null || allEnrolledModulesArray.length === 0"
+                        v-if="
+                            allEnrolledModulesArray === null || allEnrolledModulesArray.length === 0
+                        "
                         class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-200"
                     >
                         <th
@@ -56,10 +57,10 @@ import { formatDate, formatName, formatEnum } from "../../util/helpers";
                             scope="row"
                             class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                         >
-                            {{ module.module.module_name }}
+                            {{ module.module.details.module_name }}
                         </th>
                         <td class="px-6 py-4">
-                            {{ formatEnum(module.module.program) }}
+                            {{ formatEnum(module.module.details.program) }}
                         </td>
                         <td class="px-6 py-4">
                             {{
@@ -119,10 +120,9 @@ export default {
         },
     },
     async created() {
-        await this.getAllEnrolledModules()
-            .then(() => {
-                this.render = true;
-            });
+        await this.getAllEnrolledModules().then(() => {
+            this.render = true;
+        });
     },
 };
 </script>

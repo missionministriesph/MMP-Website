@@ -8,7 +8,7 @@ const detailsSchema = {
         notEmpty: true,
         isString: true,
         isLength: {
-            options: { min: 5, max: 50 },
+            options: { min: 5, max: 200 },
             errorMessage: "Module name should be between 5 and 50 characters long",
         },
     },

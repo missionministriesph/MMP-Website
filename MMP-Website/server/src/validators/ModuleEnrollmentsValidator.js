@@ -16,7 +16,7 @@ const enrollmentSchema = {
         notEmpty: true,
         isString: true,
         isLength: {
-            options: { min: 5, max: 50 },
+            options: { min: 5, max: 200 },
             errorMessage: "Module name should be between 5 and 50 characters long",
         },
     },
@@ -184,7 +184,14 @@ export const validateEditGradeReqBody = () => checkSchema(gradeSchema, ["body"])
 // Grade Object Cleaner
 export const cleanEditGradeObject = (gradeObject) => {
     // JSON Allowed Fields
-    const fields = ["grade", "no_of_absences", "remarks"];
+    const fields = [
+        "grade",
+        "no_of_absences",
+        "remarks",
+        "status",
+        "date_submitted",
+        "date_received",
+    ];
 
     let cleanedObject = {};
 

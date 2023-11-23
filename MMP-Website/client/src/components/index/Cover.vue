@@ -1,3 +1,8 @@
+<script setup>
+import { useCredentialsStore } from "../../store/store";
+const store = useCredentialsStore();
+</script>
+
 <template>
     <section class="bg-center bg-no-repeat bg-blend-multiply bg-background">
         <div class="px-4 mx-auto max-w-screen-xl text-center py-24 lg:py-48 mt-16">
@@ -19,6 +24,7 @@
                 <router-link
                     to="/student/signup"
                     class="inline-flex justify-center items-center py-3 px-5 text-base font-medium text-center text-black rounded-lg bg-gray-100 hover:bg-highlight hover:text-white focus:ring-4 focus:ring-gray-400"
+                    v-if="!store.isLoggedIn"
                 >
                     Get started
                     <svg
@@ -38,7 +44,8 @@
                     </svg>
                 </router-link>
                 <a
-                    href="#"
+                    href="https://www.facebook.com/MMPece/"
+                    target="_blank"
                     class="inline-flex justify-center items-center py-3 px-5 text-base font-medium text-center text-white rounded-lg border border-white focus:ring-4 focus:ring-gray-400"
                 >
                     Learn more

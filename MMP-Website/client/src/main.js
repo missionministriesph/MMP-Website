@@ -15,7 +15,8 @@ const app = createApp(App);
 app.use(createPinia());
 app.use(router);
 app.use(axios, {
-    baseUrl: "https://mmp-ece-server-zrn4.onrender.com/API",
+    baseUrl: "https://mmp-ece-server.onrender.com/API",
+    //baseUrl: "http://localhost:4000/API",
 });
 
 // Mount Vue Instance

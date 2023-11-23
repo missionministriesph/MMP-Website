@@ -3,7 +3,7 @@
 import MessagePopup from "../../common/MessagePopup.vue";
 import PromptPopup from "../../common/PromptPopup.vue";
 // Helpers
-import { formatName, addUnique } from "../../../util/helpers";
+import { formatName, addUnique, duplicate } from "../../../util/helpers";
 import LoadingSpinner from "../../common/LoadingSpinner.vue";
 // Props
 defineProps({
@@ -94,7 +94,9 @@ defineEmits(["select-student"]);
                     </tr>
                     <tr
                         v-for="(bill, index) in billArray"
-                        @click="$emit(editMode ? '' : 'select-student', bill.enrollments.student_id)"
+                        @click="
+                            $emit(editMode ? '' : 'select-student', bill.enrollments.student_id)
+                        "
                         class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
                     >
                         <th
@@ -128,10 +130,9 @@ defineEmits(["select-student"]);
                         </td>
                         <td class="px-6 py-4" v-if="editMode">
                             <button
-                                
                                 type="button"
                                 class="text-white h-fit bg-highlight hover:bg-highlight-hover focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center"
-                                @click="confirmDeleteStudent(bill)" 
+                                @click="confirmDeleteStudent(bill)"
                             >
                                 Delete
                             </button>
@@ -254,15 +255,17 @@ export default {
         },
         switchToEditMode() {
             this.editMode = true;
-            this.backupEnrollmentsArray = JSON.parse(JSON.stringify(this.moduleEnrollmentArray));
+            this.backupEnrollmentsArray = duplicate(this.moduleEnrollmentArray);
         },
         confirmDeleteStudent(bill) {
             this.deletingBill = bill;
-            this.currentPopup = 'delete';
+            this.currentPopup = "delete";
         },
         async deleteStudent(bill) {
             this.$axios
-                .delete(`/bills/delete/${bill.bill_no}/${bill.enrollments.module_name}/${bill.enrollments.school_year}/${bill.enrollments.student_id}`)
+                .delete(
+                    `/bills/delete/${bill.bill_no}/${bill.enrollments.module_name}/${bill.enrollments.school_year}/${bill.enrollments.student_id}`
+                )
                 // Assuming successful deletion
                 .then(() => {
                     this.currentPopup = null;

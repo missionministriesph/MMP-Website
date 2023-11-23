@@ -104,50 +104,6 @@ defineEmits(["on-back"]);
         </div>
     </div>
 
-    <MessagePopup
-        v-if="currentPopup === 'invalid-inputs'"
-        title="Invalid Inputs."
-        description="Please follow the form guides."
-        exit-text="Close"
-        @on-exit="currentPopup = null"
-    />
-
-    <PromptPopup
-        v-if="currentPopup === 'confirmation'"
-        title="Are You Sure You Want to Save Changes?"
-        description="Please review your changes before saving."
-        confirm-text="Yes, I'm sure"
-        exit-text="No, cancel"
-        @on-confirm="updateEnrollments()"
-        @on-exit="currentPopup = null"
-    />
-
-    <PromptPopup
-        v-if="currentPopup === 'cancel'"
-        title="Are You Sure You Want to Discard Changes?"
-        description="This action cannot be undone."
-        confirm-text="Yes, I'm sure"
-        exit-text="No, cancel"
-        @on-confirm="cancelChanges()"
-        @on-exit="currentPopup = null"
-    />
-
-    <MessagePopup
-        v-if="currentPopup === 'success'"
-        title="Updated Student Records!"
-        description="Student records have been successfully updated."
-        accepted="true"
-        exit-text="Close"
-        @on-exit="currentPopup = null"
-    />
-
-    <MessagePopup
-        v-if="currentPopup === 'error'"
-        title="Something went wrong."
-        description="Please try again."
-        exit-text="Close"
-        @on-exit="currentPopup = null"
-    />
 </template>
 
 <script>

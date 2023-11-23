@@ -672,7 +672,7 @@ StudentsRouter.post("/", validateStudentReqBody(), async (req, res) => {
         // Send email to admin
         await sendEmail(
             adminStudentEnrollmentEmail(
-                `${student.first_name} ${student.middle_name} ${student.last_name}`,
+                `${student.first_name} ${student.last_name}`,
                 student.email,
                 student.student_id
             )
@@ -782,7 +782,7 @@ StudentsRouter.patch("/status/:student_id", validateStatusReqBody(), async (req,
             if (updatedData.status === "ACTIVE") {
                 await sendEmail(
                     studentAcceptedEnrollmentEmail(
-                        `${updatedStudent.first_name} ${updatedStudent.middle_name} ${updatedStudent.last_name}`,
+                        `${updatedStudent.first_name} ${updatedStudent.last_name}`,
                         updatedStudent.email,
                         student_id
                     )

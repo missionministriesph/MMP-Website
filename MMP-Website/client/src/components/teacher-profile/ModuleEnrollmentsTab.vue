@@ -4,7 +4,7 @@ import MessagePopup from "../../components/common/MessagePopup.vue";
 import PromptPopup from "../../components/common/PromptPopup.vue";
 import LoadingSpinner from "../../components/common/LoadingSpinner.vue";
 // Helpers
-import { formatName, addUnique, formatText } from "../../util/helpers";
+import { formatName, formatEnum, addUnique, formatText, duplicate } from "../../util/helpers";
 // Props
 defineProps({
     moduleName: String,
@@ -65,6 +65,7 @@ defineEmits(["on-back"]);
                             <th scope="col" class="px-6 py-3">Name</th>
                             <th scope="col" class="px-6 py-3">Grade</th>
                             <th scope="col" class="px-6 py-3">Absences</th>
+                            <th scope="col" class="px-6 py-3">Status</th>
                             <th scope="col" class="px-6 py-3 text-center">Remarks</th>
                         </tr>
                     </thead>
@@ -117,7 +118,9 @@ defineEmits(["on-back"]);
                                 <input
                                     @change="editGrade(enrollment.grade, index)"
                                     v-model="moduleEnrollmentArray[index].grade"
-                                    :disabled="!editMode"
+                                    :disabled="
+                                        !editMode && enrollment.status !== 'PENDING_APPROVAL'
+                                    "
                                     id="student-grade"
                                     scope="row"
                                     class="bg-inherit font-medium text-gray-500 text-xl text-center"
@@ -132,7 +135,9 @@ defineEmits(["on-back"]);
                                 <input
                                     @change="editAbsences(enrollment.no_of_absences, index)"
                                     v-model="moduleEnrollmentArray[index].no_of_absences"
-                                    :disabled="!editMode"
+                                    :disabled="
+                                        !editMode && enrollment.status !== 'PENDING_APPROVAL'
+                                    "
                                     id="absences"
                                     scope="row"
                                     class="bg-inherit font-medium text-gray-500 text-xl text-center"
@@ -143,11 +148,22 @@ defineEmits(["on-back"]);
                                     </div>
                                 </div>
                             </th>
+
+                            <th
+                                id="status"
+                                scope="row"
+                                class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
+                            >
+                                {{ formatEnum(enrollment.status) }}
+                            </th>
+
                             <th>
                                 <input
                                     @change="editRemarks(index)"
                                     v-model="moduleEnrollmentArray[index].remarks"
-                                    :disabled="!editMode"
+                                    :disabled="
+                                        !editMode && enrollment.status !== 'PENDING_APPROVAL'
+                                    "
                                     id="remarks"
                                     scope="row"
                                     class="bg-inherit font-medium text-gray-500 text-xl text-center"
@@ -271,12 +287,28 @@ export default {
         },
         switchToEditMode() {
             this.editMode = true;
-            this.backupEnrollmentsArray = JSON.parse(JSON.stringify(this.moduleEnrollmentArray));
+            this.backupEnrollmentsArray = duplicate(this.moduleEnrollmentArray);
         },
         editGrade(grade, index) {
-            const formattedGrade = parseFloat(grade).toFixed(2).toString();
+            let formattedGrade;
+            if (grade !== "INC") {
+                formattedGrade = parseFloat(grade).toFixed(2).toString();
+            } else {
+                formattedGrade = grade;
+            }
             if (this.validateGrade(formattedGrade, index)) {
                 this.moduleEnrollmentArray[index].grade = formattedGrade;
+                this.moduleEnrollmentArray[index].date_submitted = new Date();
+                this.moduleEnrollmentArray[index].date_received = new Date();
+
+                if (formattedGrade === "5.00") {
+                    this.moduleEnrollmentArray[index].status = "FAILED";
+                } else if (grade === "INC") {
+                    this.moduleEnrollmentArray[index].status = "IN_PROGRESS";
+                } else {
+                    this.moduleEnrollmentArray[index].status = "PASSED";
+                }
+
                 addUnique(this.changedIndices, index);
             }
         },
@@ -292,7 +324,7 @@ export default {
         },
         cancelChanges() {
             this.editMode = false;
-            this.moduleEnrollmentArray = JSON.parse(JSON.stringify(this.backupEnrollmentsArray));
+            this.moduleEnrollmentArray = duplicate(this.backupEnrollmentsArray);
             this.changedIndices = [];
             this.errors = {
                 grades: {},
@@ -317,6 +349,9 @@ export default {
                             grade: this.moduleEnrollmentArray[value].grade,
                             no_of_absences: this.moduleEnrollmentArray[value].no_of_absences,
                             remarks: this.moduleEnrollmentArray[value].remarks,
+                            date_received: this.moduleEnrollmentArray[value].date_received,
+                            date_submitted: this.moduleEnrollmentArray[value].date_submitted,
+                            status: this.moduleEnrollmentArray[value].status,
                         }
                     )
                     // If successful

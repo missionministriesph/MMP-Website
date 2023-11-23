@@ -8,7 +8,7 @@ const moduleSchema = {
         notEmpty: true,
         isString: true,
         isLength: {
-            options: { min: 5, max: 50 },
+            options: { min: 5, max: 200 },
             errorMessage: "Module name should be between 5 and 50 characters long",
         },
     },
@@ -38,18 +38,6 @@ const moduleSchema = {
         notEmpty: true,
         isDate: true,
     },
-    program: {
-        trim: true,
-        notEmpty: true,
-        isString: true,
-        isIn: {
-            options: [
-                ["FOUNDATIONAL_COURSES", "BIBLICAL_FOUNDATION", "TEACHER_TRACK", "ADMIN_TRACK"],
-            ],
-            errorMessage:
-                "Program should be 'FOUNDATIONAL_COURSES', 'BIBLICAL_FOUNDATION', 'TEACHER_TRACK', 'ADMIN_TRACK'",
-        },
-    },
 };
 
 const teacherEditSchema = {
@@ -71,20 +59,15 @@ export const validateEditTeacherReqBody = () => checkSchema(teacherEditSchema, [
 // Module Object Cleaner
 export const cleanModuleObject = (moduleObject) => {
     // JSON Allowed Fields
-    const fields = [
-        "module_name",
-        "school_year",
-        "teacher_id",
-        "session_1",
-        "session_2",
-        "program",
-    ];
+    const fields = ["module_name", "school_year", "teacher_id", "session_1", "session_2"];
 
     let cleanedObject = {};
 
     for (const field of fields) {
         cleanedObject[field] = moduleObject[field];
     }
+
+    cleanedObject["school_year"] = parseInt(cleanedObject["school_year"]);
 
     return cleanedObject;
 };

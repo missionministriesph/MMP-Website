@@ -69,12 +69,12 @@ ModulesRouter.get("/module/:module_name/:school_year", async (req, res) => {
                 teacher_id: true,
                 session_1: true,
                 session_2: true,
-                program: true,
                 details: {
                     select: {
                         module_name: true,
                         prerequisites: true,
                         description: true,
+                        program: true,
                     },
                 },
             },
@@ -96,9 +96,7 @@ ModulesRouter.get("/", async (req, res) => {
     try {
         const modules = await prisma.Modules.findMany({
             select: {
-                module_name: true,
                 school_year: true,
-                program: true,
                 teacher: {
                     select: {
                         teacher_id: true,
@@ -114,6 +112,7 @@ ModulesRouter.get("/", async (req, res) => {
                         module_name: true,
                         prerequisites: true,
                         description: true,
+                        program: true,
                     },
                 },
             },
@@ -143,7 +142,6 @@ ModulesRouter.get("/school_year/:school_year", async (req, res) => {
             },
             select: {
                 school_year: true,
-                program: true,
                 teacher: {
                     select: {
                         teacher_id: true,
@@ -159,6 +157,7 @@ ModulesRouter.get("/school_year/:school_year", async (req, res) => {
                         module_name: true,
                         prerequisites: true,
                         description: true,
+                        program: true,
                     },
                 },
             },
@@ -239,10 +238,23 @@ ModulesRouter.get("/student/:student_id", async (req, res) => {
             return element.module_name;
         });
 
+        //Get all already taken modules this year
+        const same_year = (
+            await prisma.Module_Enrollments.findMany({
+                where: {
+                    school_year: new Date().getFullYear(),
+                    student_id: student_id,
+                },
+            })
+        ).map((element) => {
+            return element.module_name;
+        });
+
         //Get all the names of modules that are not taken yet
         const untaken = names
             .filter((element) => !passed.includes(element))
-            .filter((element) => !in_progress.includes(element));
+            .filter((element) => !in_progress.includes(element))
+            .filter((element) => !same_year.includes(element));
 
         //Get all prerequisites
         const untaken_details = await prisma.Module_Details.findMany({
@@ -278,12 +290,23 @@ ModulesRouter.get("/student/:student_id", async (req, res) => {
         //Get all the modules to be taken
         const modules = await prisma.Modules.findMany({
             where: {
-                module_name: {
-                    in: takeable,
+                details: {
+                    module_name: {
+                        in: takeable,
+                    },
                 },
                 school_year: new Date().getFullYear(),
             },
-            include: {
+            select: {
+                school_year: true,
+                session_1: true,
+                session_2: true,
+                details: {
+                    select: {
+                        module_name: true,
+                        program: true,
+                    },
+                },
                 teacher: {
                     select: {
                         first_name: true,
@@ -292,7 +315,9 @@ ModulesRouter.get("/student/:student_id", async (req, res) => {
                 },
             },
             orderBy: {
-                module_name: "asc",
+                details: {
+                    module_name: "asc",
+                },
             },
         });
 
@@ -314,11 +339,14 @@ ModulesRouter.get("/program/:program", async (req, res) => {
 
         const modules = await prisma.Modules.findMany({
             where: {
-                program: program,
+                details: {
+                    some: {
+                        program: program,
+                    },
+                },
             },
             select: {
                 school_year: true,
-                program: true,
                 teacher: {
                     select: {
                         teacher_id: true,
@@ -334,6 +362,7 @@ ModulesRouter.get("/program/:program", async (req, res) => {
                         module_name: true,
                         prerequisites: true,
                         description: true,
+                        program: true,
                     },
                 },
             },
@@ -366,7 +395,6 @@ ModulesRouter.get("/teacher/:teacher_id", async (req, res) => {
                 },
                 select: {
                     school_year: true,
-                    program: true,
                     teacher: {
                         select: {
                             teacher_id: true,
@@ -382,6 +410,7 @@ ModulesRouter.get("/teacher/:teacher_id", async (req, res) => {
                             module_name: true,
                             prerequisites: true,
                             description: true,
+                            program: true,
                         },
                     },
                 },
@@ -414,17 +443,21 @@ ModulesRouter.get("/report/:module_name/:school_year", async (req, res) => {
                 module_name_school_year: { module_name, school_year },
             },
             select: {
-                module_name: true,
                 school_year: true,
                 session_1: true,
                 session_2: true,
-                program: true,
                 teacher: {
                     select: {
                         teacher_id: true,
                         first_name: true,
                         last_name: true,
                         middle_name: true,
+                    },
+                },
+                details: {
+                    select: {
+                        module_name: true,
+                        program: true,
                     },
                 },
                 enrollments: {
@@ -579,6 +612,11 @@ ModulesRouter.post("/", validateModuleReqBody(), async (req, res) => {
     try {
         // Get module from req.body
         const module = cleanModuleObject(req.body);
+
+        // Check if module exists
+        if (await exists(module.module_name, module.school_year)) {
+            throw new Error("Module already exists");
+        }
 
         // Parse for correct data types
         parser(module);

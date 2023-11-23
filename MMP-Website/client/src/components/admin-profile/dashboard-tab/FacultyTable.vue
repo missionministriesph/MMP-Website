@@ -3,11 +3,12 @@ import { formatDate, formatName, formatEnum, addUnique } from "@/util/helpers";
 import MessagePopup from "../../common/MessagePopup.vue";
 import LoadingSpinner from "../../common/LoadingSpinner.vue";
 import PromptPopup from "../../common/PromptPopup.vue";
+import { duplicate } from "../../../util/helpers";
 </script>
 
 <template>
     <LoadingSpinner v-if="!render" />
-    <div v-else class="overflow-x-auto shadow-md rounded-lg overflow-y-auto">
+    <div v-else class="-mt-12 overflow-x-auto shadow-md rounded-lg overflow-y-auto">
         <div class="grid">
             <button
                 @click="update()"
@@ -213,7 +214,7 @@ export default {
                 .then(({ data }) => {
                     // Store data
                     this.facultyArray = data;
-                    this.baseDataArray = JSON.parse(JSON.stringify(this.facultyArray));
+                    this.baseDataArray = duplicate(this.facultyArray);
                 })
                 // If unsuccessful
                 .catch((error) => {
@@ -249,7 +250,7 @@ export default {
                 this.showUpdatePopup = true;
             }
 
-            this.baseDataArray = JSON.parse(JSON.stringify(this.facultyArray));
+            this.baseDataArray = duplicate(this.facultyArray);
         },
         deleteTeacher(teacher_id, index) {
             this.currentPopup = "delete-confirmation";
@@ -262,7 +263,7 @@ export default {
                 .then(() => {
                     this.currentPopup = null;
                     this.facultyArray.splice(this.activeIndex, 1);
-                    this.baseDataArray = JSON.parse(JSON.stringify(this.facultyArray));
+                    this.baseDataArray = duplicate(this.facultyArray);
                 })
                 .catch((error) => {
                     this.showErrorPopup = true;
@@ -313,6 +314,8 @@ export default {
                 .catch((error) => {
                     this.showErrorPopup = true;
                 });
+
+            this.baseDataArray = duplicate(this.facultyArray);
         },
     },
     async created() {

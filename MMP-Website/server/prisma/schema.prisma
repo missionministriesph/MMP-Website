@@ -199,7 +199,6 @@ model Modules {
     teacher_id  String?              @db.VarChar(12)
     session_1   DateTime             @db.Date
     session_2   DateTime             @db.Date
-    program     Programs
     // Created and Updated Dates
     created_at  DateTime             @default(now()) @db.Timestamptz()
     updated_at  DateTime             @updatedAt @db.Timestamptz()
@@ -255,6 +254,7 @@ model Module_Details {
     //Fields
     prerequisites String[]     @default([]) @db.VarChar(100)
     description   String       @db.Text
+    program       Programs
     //Relations
     modules       Modules[]
     name          Module_Names @relation(fields: [module_name], references: [module_name])

@@ -15,14 +15,16 @@ const createTransporter = async () => {
         refresh_token: process.env.REFRESH_TOKEN
     });
 
-    const accessToken = await new Promise((resolve, reject) => {
-        oauth2Client.getAccessToken((err, token) => {
-        if (err) {
-            reject();
-        }
-        resolve(token);
-        });
-    });
+    const accessToken = oauth2Client.getAccessToken();
+
+    // const accessToken = await new Promise((resolve, reject) => {
+    //     oauth2Client.getAccessToken((err, token) => {
+    //         if (err) {
+    //             reject();
+    //         }
+    //         resolve(token);
+    //     });
+    // });
 
     const transporter = nodemailer.createTransport({
         service: "gmail",
