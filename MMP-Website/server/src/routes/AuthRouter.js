@@ -74,7 +74,7 @@ AuthRouter.post("/login", async (req, res) => {
                         admin_id: user_id,
                     },
                 })
-            ).password;
+            )?.password;
 
             userType = "admin";
         } else {
