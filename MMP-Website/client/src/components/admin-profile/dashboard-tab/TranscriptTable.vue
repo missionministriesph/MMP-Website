@@ -1,7 +1,7 @@
 <script setup>
 import LoadingSpinner from "../../common/LoadingSpinner.vue";
 import MessagePopup from "../../common/MessagePopup.vue";
-import { formatDate, formatName, formatEnum } from "@/util/helpers";
+import { formatDate, formatName, formatEnum, duplicate } from "@/util/helpers";
 defineProps({
     refreshToggle: Boolean,
 });
@@ -9,9 +9,16 @@ defineProps({
 
 <template>
     <LoadingSpinner v-if="!render" />
-    <div v-else class="-mt-12 overflow-x-auto rounded-lg overflow-y-auto">
-        <div class="grid">
+    <div
+        v-else
+        :class="{
+            '-mt-12': wasEdited,
+        }"
+        class="overflow-x-auto shadow-md rounded-lg overflow-y-auto"
+    >
+        <div class="grid ">
             <button
+                v-if="wasEdited"
                 @click="update()"
                 type="button"
                 class="ml-auto mb-2 w-15 h-13 px-5 py-2 text-base font-medium text-center text-white bg-highlight rounded-lg hover:bg-highlight_hover"
@@ -32,6 +39,7 @@ defineProps({
                     </tr>
                 </thead>
                 <tbody>
+                    <!-- display the TOR requests from the TORRrequestArray-->
                     <tr
                         class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
                         v-for="(TORRequest, index) in TORRequestArray"
@@ -64,7 +72,13 @@ defineProps({
                             {{ formatDate(TORRequest.request_date) }}
                         </th>
                         <th scope="row" class="px-6 py-3 font-medium">
-                            <select v-model="statusArray[index]">
+                            <select
+                                v-model="statusArray[index]"
+                                @change="addEditedIndex(index)"
+                                :class="{
+                                    'text-edited': statusArray[index] !== TORRequest.status,
+                                }"
+                            >
                                 <option
                                     :selected="status === TORRequest.status"
                                     v-for="status in statuses"
@@ -106,6 +120,7 @@ export default {
             render: false,
             // Data
             TORRequestArray: null,
+            baseTORRequestArray: null,
             statusArray: null,
             editArray: [],
             statuses: ["PENDING", "REJECTED", "UNPAID", "SENT"],
@@ -137,20 +152,12 @@ export default {
                     console.log(error);
                 });
         },
-        // Get edit list
-        getEditList() {
-            this.editArray = [];
-            for (const [index, data] of this.TORRequestArray.entries()) {
-                if (data.status !== this.statusArray[index]) {
-                    this.editArray.push({ req_id: data.req_id, status: this.statusArray[index] });
-                }
-            }
-        },
         //Update DB
         async update() {
-            this.getEditList();
+            // create an array of errors
             let errorsID = [];
 
+            // for each data in editArray, patch the status
             for (const data of this.editArray) {
                 await this.$axios
                     .patch(`/tor_requests/${data.req_id}`, { status: data.status })
@@ -158,45 +165,69 @@ export default {
                         errorsID.push(data.req_id);
                     });
             }
-
+            // if all updates failed, show error popup
             if (errorsID.length === this.editArray.length) {
                 this.showErrorPopup = true;
-            } else if (errorsID.length > 1) {
+            } else if (errorsID.length > 1) { // if some updates failed, show error popup with the failed request ID's
                 this.title = "Error with some updates";
                 this.description = "Error with Request ID's:  ";
                 this.acception = false;
-                errorsID.forEach((element) => {
+                errorsID.forEach((element) => { // add the failed request ID's to the description
                     this.description += `${element}, `;
                 });
+                // remove the last comma and space
                 this.description = this.description.slice(0, this.description.length - 2);
                 this.showUpdatePopup = true;
-                await this.getTORs();
-            } else {
+                await this.getTORs(); // refresh the table
+            } else { // if all updates are successful, show success popup
                 this.title = "All updates successful";
                 this.description = "Request ID's:  ";
                 this.acception = true;
-                this.editArray.forEach((element) => {
+                this.editArray.forEach((element) => { // add the successful request ID's to the description
                     this.description += `${element.req_id}, `;
                 });
+                // remove the last comma and space
                 this.description = this.description.slice(0, this.description.length - 2);
                 this.description += " have been successfully edited";
+                // show success popup
                 this.showUpdatePopup = true;
+                this.editArray = [];
                 await this.getTORs();
             }
         },
+        // Add edited index
+        addEditedIndex(index) {
+            // if the status is changed, add the request ID and status to the editArray
+            if (this.TORRequestArray[index].status !== this.statusArray[index]) {
+                this.editArray.push({
+                    req_id: this.TORRequestArray[index].req_id,
+                    status: this.statusArray[index],
+                });
+            } else { // if the status is changed back to the original, remove the request ID and status from the editArray
+                this.editArray = this.editArray.filter(
+                    (element) => element.req_id !== this.TORRequestArray[index].req_id
+                );
+            }
+        },
     },
-    async created() {
-        await this.getTORs().then(() => {
-            this.render = true;
-        });
+    computed: {
+        wasEdited() { // check if the editArray is empty
+            return this.editArray.length > 0;
+        },
     },
     watch: {
-        async refreshToggle() {
+        async refreshToggle() { // if refreshToggle is changed, refresh the table
             this.render = false;
             await this.getTORs().then(() => {
                 this.render = true;
             });
         },
+    },
+    async created() {
+        // Get TORs
+        await this.getTORs().then(() => {
+            this.render = true;
+        });
     },
 };
 </script>

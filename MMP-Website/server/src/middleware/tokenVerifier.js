@@ -12,7 +12,6 @@ export const verifyToken = async (req, res, next) => {
 
     let permission = 0;
 
-    // TODO: Add account_type checking for routes that require it
     try {
         // Get token from request header
         let token = req.header("Authorization");

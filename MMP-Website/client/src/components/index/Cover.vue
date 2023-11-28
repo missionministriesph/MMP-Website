@@ -43,6 +43,7 @@ const store = useCredentialsStore();
                         />
                     </svg>
                 </router-link>
+                <!-- clicking on button routes to MMP ECE FB page-->
                 <a
                     href="https://www.facebook.com/MMPece/"
                     target="_blank"

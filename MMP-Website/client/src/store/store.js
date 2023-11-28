@@ -14,6 +14,7 @@ export const useCredentialsStore = defineStore("credentials", {
     },
     actions: {
         init() {
+            // Check if user is logged in, if so, set the state to the user's info, otherwise set the state to null
             if (localStorage.getItem("userInfo")) {
                 const { token, account_type, user, user_id, isLoggedIn } = JSON.parse(
                     localStorage.getItem("userInfo")
@@ -41,6 +42,7 @@ export const useCredentialsStore = defineStore("credentials", {
                 );
             }
         },
+        // Set the state to the user's info and save it to local storage, so that the user will be logged in on refresh
         login(token, account_type, user, user_id) {
             this.token = token;
             this.account_type = account_type;
@@ -58,6 +60,7 @@ export const useCredentialsStore = defineStore("credentials", {
                 })
             );
         },
+        // Set the state to null and save it to local storage, so that the user will be logged out on refresh
         logout() {
             this.token = null;
             this.account_type = null;

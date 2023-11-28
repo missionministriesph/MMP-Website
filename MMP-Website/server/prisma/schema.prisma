@@ -7,7 +7,6 @@ generator client {
 
 datasource db {
     provider  = "postgresql"
-    // url      = env("DATABASE_URL_LOCAL") //Local test connection
     url       = env("DATABASE_URL") // uses connection pooling
     directUrl = env("DIRECT_URL") // uses a direct connection
 }

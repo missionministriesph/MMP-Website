@@ -431,12 +431,14 @@ defineEmits(["on-back"]);
                     </div>
                 </div>
                 <div class="mb-6">
-                    <div class="block mb-1 font-medium text-gray-900 dark:text-white">College</div>
+                    <div class="block mb-1 font-medium text-gray-900 dark:text-white">
+                        College School
+                    </div>
                     <input
                         type="text"
                         v-model="student.college"
                         :disabled="!editMode"
-                        placeholder="College"
+                        placeholder="College School"
                         :class="{
                             '-m-2 border-0': !editMode,
                             'border-gray-200 shadow-sm': editMode,
@@ -452,13 +454,13 @@ defineEmits(["on-back"]);
                 </div>
                 <div class="mb-6">
                     <div class="block mb-1 font-medium text-gray-900 dark:text-white">
-                        Education Major
+                        College Course
                     </div>
                     <input
                         type="text"
                         v-model="student.college_course"
                         :disabled="!editMode"
-                        placeholder="Education Major"
+                        placeholder="College Course"
                         :class="{
                             '-m-2 border-0': !editMode,
                             'border-gray-200 shadow-sm': editMode,
@@ -474,13 +476,13 @@ defineEmits(["on-back"]);
                 </div>
                 <div class="mb-6">
                     <div class="block mb-1 font-medium text-gray-900 dark:text-white">
-                        Graduate Studies
+                        Graduate School
                     </div>
                     <input
                         type="text"
                         v-model="student.graduate"
                         :disabled="!editMode"
-                        placeholder="Graduate Studies"
+                        placeholder="Graduate School"
                         :class="{
                             '-m-2 border-0': !editMode,
                             'border-gray-200 shadow-sm': editMode,
@@ -491,6 +493,28 @@ defineEmits(["on-back"]);
                     <div class="input-errors" v-if="errors.graduate">
                         <div class="block mb-2 text-sm font-medium text-highlight">
                             {{ errors.graduate }}
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <div class="block mb-1 font-medium text-gray-900 dark:text-white">
+                        Graduate Course
+                    </div>
+                    <input
+                        type="text"
+                        v-model="student.graduate_course"
+                        :disabled="!editMode"
+                        placeholder="Graduate Course"
+                        :class="{
+                            '-m-2 border-0': !editMode,
+                            'border-gray-200 shadow-sm': editMode,
+                        }"
+                        class="bg-gray-100 border text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5"
+                        autocomplete="off"
+                    />
+                    <div class="input-errors" v-if="errors.graduate_course">
+                        <div class="block mb-2 text-sm font-medium text-highlight">
+                            {{ errors.graduate_course }}
                         </div>
                     </div>
                 </div>
@@ -808,6 +832,7 @@ defineEmits(["on-back"]);
 </template>
 
 <script>
+// kayo na bahala i aint readin allat
 export default {
     data() {
         return {
@@ -945,6 +970,7 @@ export default {
                     console.log(error);
                 });
         },
+        // update student's finance info
         async updateFinanceInfo() {
             await this.$axios
                 .get(`/module_enrollments/balance/${this.studentId}`)
@@ -980,6 +1006,7 @@ export default {
                 this.currentPopup = "invalid-inputs";
             }
         },
+        // Delete payment based on OR number
         async deletePayment(or_no) {
             await this.$axios
                 .delete(`/payments/${or_no}`)
@@ -1064,6 +1091,7 @@ export default {
         },
         // Validators
         validate() {
+            // validate the student data and return true or false
             this.validateFirstName();
             this.validateLastName();
             this.validateMiddleName();
@@ -1096,7 +1124,7 @@ export default {
             this.validateEmergencyAddress();
             this.validateEmergencyNumber();
 
-            if (Object.keys(this.errors).length === 0) {
+            if (Object.keys(this.errors).length === 0) { // if no errors, return true
                 return true;
             } else {
                 return false;
@@ -1234,7 +1262,9 @@ export default {
             }
         },
         validateAdmin() {
-            if (this.student.admin.length < 2 || this.student.admin.length > 150) {
+            if (/\d/.test(this.student.admin)) {
+                this.errors["admin"] = "Admin name must not have numbers";
+            } else if (this.student.admin.length < 2 || this.student.admin.length > 150) {
                 this.errors["admin"] = "Admin name should be between 2 and 150 characters long";
             } else {
                 delete this.errors["admin"];
@@ -1258,7 +1288,9 @@ export default {
             }
         },
         validatePastor() {
-            if (this.student.pastor.length < 2 || this.student.pastor.length > 150) {
+            if (/\d/.test(this.student.pastor)) {
+                this.errors["pastor"] = "Pastor name must not have numbers";
+            } else if (this.student.pastor.length < 2 || this.student.pastor.length > 150) {
                 this.errors["pastor"] = "Pastor name should be between 2 and 150 characters long";
             } else {
                 delete this.errors["pastor"];
@@ -1420,6 +1452,10 @@ export default {
             if (this.student.emergency_name.length > 150) {
                 this.errors["emergency_name"] =
                     "Emergency name should be less than 150 characters long";
+            } else if (/\d/.test(this.student.emergency_name)) {
+                this.errors["emergency_name"] = "Emergency name should not have any numbers";
+            } else if (this.student.emergency_name.length < 1) {
+                this.errors["emergency_name"] = "Emergency name should not be empty";
             } else {
                 delete this.errors["emergency_name"];
             }
@@ -1428,6 +1464,8 @@ export default {
             if (this.student.emergency_address.length > 150) {
                 this.errors["emergency_address"] =
                     "Emergency address should be less than 150 characters long";
+            } else if (this.student.emergency_address.length < 1) {
+                this.errors["emergency_address"] = "Emergency address should not be empty";
             } else {
                 delete this.errors["emergency_address"];
             }

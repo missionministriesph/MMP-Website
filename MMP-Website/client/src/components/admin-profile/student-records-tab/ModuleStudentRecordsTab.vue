@@ -12,6 +12,7 @@ defineProps({
 defineEmits(["on-back"]);
 </script>
 
+<!-- this is the structure of the module student records table-->
 <template>
     <div class="block w-full">
         <button

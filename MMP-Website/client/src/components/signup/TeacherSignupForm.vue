@@ -167,7 +167,10 @@ import LoadingSpinner from "../../components/common/LoadingSpinner.vue";
                     <button
                         type="submit"
                         class="text-white bg-highlight hover:bg-highlight_hover focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                        @click="loading = true; submitForm()"
+                        @click="
+                            loading = true;
+                            submitForm();
+                        "
                     >
                         Sign Up
                     </button>
@@ -197,14 +200,17 @@ import LoadingSpinner from "../../components/common/LoadingSpinner.vue";
         title="Invalid Signup Credentials."
         description="Please follow the form guides."
         exit-text="Close"
-        @on-exit="showInvalidPopup = false; loading = false"
+        @on-exit="
+            showInvalidPopup = false;
+            loading = false;
+        "
     />
 
     <MessagePopup
         v-if="showSuccessPopup"
         title="You have successfully signed up as a teacher!"
         description="Please wait for Admin to verify your account before logging in."
-        accepted=true
+        accepted="true"
         exit-text="Close"
         @on-exit="
             showSuccessPopup = false;
@@ -218,7 +224,10 @@ import LoadingSpinner from "../../components/common/LoadingSpinner.vue";
         title="Email is already in use."
         description="Please use a different email or Login."
         exit-text="Close"
-        @on-exit="showUsedEmailPopup = false; loading = false"
+        @on-exit="
+            showUsedEmailPopup = false;
+            loading = false;
+        "
     />
 
     <ErrorMessagePopup
@@ -226,7 +235,10 @@ import LoadingSpinner from "../../components/common/LoadingSpinner.vue";
         title="Something went wrong."
         description="Please try again."
         exit-text="Close"
-        @on-exit="showErrorPopup = false; loading = false"
+        @on-exit="
+            showErrorPopup = false;
+            loading = false;
+        "
     />
 </template>
 
@@ -309,7 +321,7 @@ export default {
             this.validateConfirmPassword();
             this.validateAgreeTerms();
 
-            if (Object.keys(this.errors).length === 0) {
+            if (Object.keys(this.errors).length === 0) { // If no errors, return true, else return false
                 return true;
             } else {
                 return false;
@@ -318,6 +330,8 @@ export default {
         validateFirstName() {
             if (this.firstName.length < 2 || this.firstName.length > 50) {
                 this.errors["firstName"] = "First name must be between 2 and 50 characters!";
+            } else if (/\d/.test(this.firstName)) {
+                this.errors["firstName"] = "First name must not have numbers!";
             } else {
                 delete this.errors["firstName"];
             }
@@ -325,6 +339,8 @@ export default {
         validateLastName() {
             if (this.lastName.length < 2 || this.lastName.length > 50) {
                 this.errors["lastName"] = "Last name must be between 2 and 50 characters!";
+            } else if (/\d/.test(this.lastName)) {
+                this.errors["lastName"] = "Last name must not have numbers!";
             } else {
                 delete this.errors["lastName"];
             }
@@ -337,6 +353,8 @@ export default {
 
             if (this.middleName.length < 2 || this.middleName.length > 50) {
                 this.errors["middleName"] = "Middle name must be between 2 and 50 characters!";
+            } else if (/\d/.test(this.middleName)) {
+                this.errors["middleName"] = "Middle name must not have numbers!";
             } else {
                 delete this.errors["middleName"];
             }

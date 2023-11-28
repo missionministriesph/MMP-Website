@@ -50,34 +50,14 @@
                         v-model="password"
                     />
                 </div>
-                <div class="flex items-center justify-between sm:flex-row flex-col gap-5">
-                    <div class="flex items-start">
-                        <div class="flex items-center h-5">
-                            <input
-                                id="remember"
-                                aria-describedby="remember"
-                                type="checkbox"
-                                class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300"
-                                checked
-                                @click="rememberMe = !rememberMe"
-                            />
-                        </div>
-                        <div class="ml-3 text-sm">
-                            <label for="remember" class="text-gray-500 dark:text-gray-300"
-                                >Remember me</label
-                            >
-                        </div>
-                    </div>
-                    <a
-                        href="#"
-                        class="text-sm font-medium text-primary-600 hover:underline dark:text-primary-500"
-                        >Forgot password?</a
-                    >
-                </div>
+
                 <button
                     type="submit"
                     class="w-full text-white bg-highlight hover:bg-highlight_hover focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-                    @click="loading = true; submitForm()"
+                    @click="
+                        loading = true;
+                        submitForm();
+                    "
                 >
                     Sign in
                 </button>
@@ -106,7 +86,10 @@
         title="Invalid Login Credentials."
         description="Please follow the form guides."
         exit-text="Close"
-        @on-exit="showInvalidPopup = false; loading = false"
+        @on-exit="
+            showInvalidPopup = false;
+            loading = false;
+        "
     />
 
     <MessagePopup
@@ -114,7 +97,10 @@
         title="Failed to Login"
         :description="description"
         exit-text="Close"
-        @on-exit="showErrorPopup = false; loading = false"
+        @on-exit="
+            showErrorPopup = false;
+            loading = false;
+        "
     />
 </template>
 
@@ -201,9 +187,11 @@ export default {
                 return false;
             }
         },
+        // Validate user id
         validateUserID() {
+            // initialize regex
             const idRegex = /20\d{2}-\d{3}-\d{3}/;
-            if (idRegex.test(this.user_id) !== true) {
+            if (idRegex.test(this.user_id) !== true) { // if user_id does not match regex, add error
                 this.errors["id"] = "Invalid ID format";
             } else {
                 delete this.errors["id"];

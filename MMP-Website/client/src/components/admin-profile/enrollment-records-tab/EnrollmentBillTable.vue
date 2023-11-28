@@ -22,6 +22,7 @@ defineEmits(["select-student"]);
         <div class="md:flex justify-between mb-1">
             <div></div>
             <div class="grid">
+                <!-- if edit button is clicked, switch to edit mode-->
                 <button
                     v-if="!editMode"
                     @click="switchToEditMode()"
@@ -129,6 +130,7 @@ defineEmits(["select-student"]);
                             {{ bill.enrollments.grade }}
                         </td>
                         <td class="px-6 py-4" v-if="editMode">
+                            <!-- if in edit mode, delete button appears-->
                             <button
                                 type="button"
                                 class="text-white h-fit bg-highlight hover:bg-highlight-hover focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center"
@@ -230,9 +232,10 @@ export default {
                     console.log(error);
                 });
         },
+        // Save changes
         getPayments(payments) {
             let total = 0;
-
+            // Add all payments
             payments.forEach((element) => {
                 total += parseFloat(element.payment);
             });
@@ -241,7 +244,7 @@ export default {
         },
         getORs(payments) {
             let orString = "";
-
+            // Add all paymentss
             for (let i = 0; i < payments.length; i++) {
                 if (i !== payments.length - 1) {
                     orString += `${payments[i].or_no}, `;
@@ -249,19 +252,23 @@ export default {
                     orString += `${payments[i].or_no}`;
                 }
             }
-
+            // Return string of OR
             return orString;
         },
         switchToEditMode() {
+            // Switch to edit mode
             this.editMode = true;
+            // Store backup
             this.backupEnrollmentsArray = duplicate(this.moduleEnrollmentArray);
         },
         confirmDeleteStudent(bill) {
+            // Store deleting bill and set popup to deletes
             this.deletingBill = bill;
             this.currentPopup = "delete";
         },
         async deleteStudent(bill) {
             this.$axios
+            // Call delete bill api endpoint
                 .delete(
                     `/bills/delete/${bill.bill_no}/${bill.enrollments.module_name}/${bill.enrollments.school_year}/${bill.enrollments.student_id}`
                 )
@@ -278,7 +285,7 @@ export default {
     },
     watch: {
         async filter() {
-            if (!this.editMode) {
+            if (!this.editMode) { // if not in edit mode, refresh
                 await this.getModuleBills().then(() => {
                     this.render = true;
                 });

@@ -1,19 +1,35 @@
 <script setup>
-import { formatDate, formatName, formatEnum, addUnique, duplicate } from "@/util/helpers";
+import { formatDate, formatName, formatEnum, duplicate } from "@/util/helpers";
 import MessagePopup from "../../common/MessagePopup.vue";
 import LoadingSpinner from "../../common/LoadingSpinner.vue";
 import PromptPopup from "../../common/PromptPopup.vue";
+import Dropdown from "../../common/Dropdown.vue";
 defineEmits(["delete"]);
 </script>
 
 <template>
     <LoadingSpinner v-if="!render" />
-    <div v-else class="-mt-12 overflow-x-auto shadow-md rounded-lg overflow-y-auto">
-        <div class="grid">
+    <div
+        v-else
+        class="overflow-x-auto shadow-md rounded-lg overflow-y-auto"
+    >
+        <div class="flex mb-2">
+            <Dropdown
+                :optionsArray="['All', 'For Approval', 'Active / Inactive']"
+                :disabledOptions="[]"
+                :defaultOption="'All'"
+                @on-select="
+                    (selected) => {
+                        filterMode = selected;
+                        swapFilter();
+                    }
+                "
+            />
             <button
+                v-if="wasEdited"
                 @click="update()"
                 type="button"
-                class="ml-auto mb-2 w-15 h-13 px-5 py-2 text-base font-medium text-center text-white bg-highlight rounded-lg hover:bg-highlight_hover"
+                class="ml-auto w-15 h-13 px-5 py-2 text-base font-medium text-center text-white bg-highlight rounded-lg hover:bg-highlight_hover"
             >
                 Save
             </button>
@@ -33,7 +49,7 @@ defineEmits(["delete"]);
                 </thead>
                 <tbody>
                     <tr
-                        v-if="studentArray === null || studentArray.length === 0"
+                        v-if="displayArray === null || displayArray.length === 0"
                         class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
                     >
                         <th
@@ -44,7 +60,7 @@ defineEmits(["delete"]);
                         </th>
                     </tr>
                     <tr
-                        v-for="(student, index) in studentArray"
+                        v-for="(student, index) in displayArray"
                         class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
                     >
                         <th
@@ -83,7 +99,7 @@ defineEmits(["delete"]);
                                 :class="{
                                     'text-edited': student.status !== baseDataArray[index].status,
                                 }"
-                                @change="addUnique(editedIndices, index)"
+                                @change="addEditedIndex(index)"
                                 v-model="student.status"
                             >
                                 <option
@@ -179,6 +195,7 @@ defineEmits(["delete"]);
         description="Please make sure you want to delete this student. This action cannot be undone."
         confirm-text="Yes, I'm sure"
         exit-text="No, cancel"
+        :deleted="true"
         @on-confirm="runDelete()"
         @on-exit="currentPopup = null"
     />
@@ -192,6 +209,7 @@ export default {
             render: false,
             // Data
             studentArray: null,
+            displayArray: null,
             // Popups
             title: String,
             description: String,
@@ -203,11 +221,14 @@ export default {
             //Handlers
             editedIndices: [],
             erroredEdits: [],
+            reflectionMap: {},
             //Copy of array
             baseDataArray: null,
             //Deletion data
             activeId: null,
             activeIndex: null,
+            //Filter
+            filterMode: "All", // 'All', 'Approval', 'Active / Inactive'
         };
     },
     methods: {
@@ -220,62 +241,142 @@ export default {
                 .then(({ data }) => {
                     // Store data
                     this.studentArray = data;
-                    this.baseDataArray = duplicate(this.studentArray);
+                    this.getFiltered();
+                    this.baseDataArray = duplicate(this.displayArray);
                 })
                 // If unsuccessful
                 .catch((error) => {
                     console.log(error);
                 });
         },
+        //Get filtered
+        getFiltered() {
+            //Array to display
+            this.displayArray = [];
+            //Map of index to studentArray index
+            this.reflectionMap = {};
+            let count = 0;
+            //Filter
+            switch (this.filterMode) {
+                case "All":
+                    // if all, display all students
+                    this.displayArray = duplicate(this.studentArray);
+                    break;
+                case "For Approval":
+                    // if for approval, only display students with status for approval
+                    this.studentArray.forEach((element, index) => {
+                        if (element.status === "FOR_APPROVAL") {
+                            this.displayArray.push(duplicate(element));
+                            this.reflectionMap[count] = index;
+                            count++;
+                        }
+                    });
+                    break;
+                case "Active / Inactive":
+                    // if management, only display students with status not for approval
+                    this.studentArray.forEach((element, index) => {
+                        if (element.status !== "FOR_APPROVAL") {
+                            this.displayArray.push(duplicate(element));
+                            this.reflectionMap[count] = index;
+                            count++;
+                        }
+                    });
+                    break;
+                default:
+                    this.displayArray = duplicate(this.studentArray);
+            }
+        },
+        swapFilter() {
+            //Get filtered
+            this.getFiltered();
+            //baseDataArray is the copy of the array
+            this.baseDataArray = duplicate(this.displayArray);
+            //Reset edited indices
+            this.editedIndices = [];
+            this.activeId = null;
+            this.activeIndex = null;
+        },
         update() {
             this.erroredEdits = [];
+            //For each edited index, patch the status
 
             this.editedIndices.forEach(async (index) => {
                 await this.$axios
-                    .patch(`/students/status/${this.studentArray[index].student_id}`, {
-                        status: this.studentArray[index].status,
+                    .patch(`/students/status/${this.displayArray[index].student_id}`, {
+                        status: this.displayArray[index].status,
                     })
+                    //If successful, get the student
                     .then(async () => {
                         await this.$axios
                             .get(`/students/id/${this.studentArray[index].student_id}`)
-                            .then(({ data }) => (this.studentArray[index] = data));
+                            //If successful, update the studentArray
+                            .then(({ data }) => {
+                                this.displayArray[index] = data;
+                                //If filter is not all, update the studentArray
+                                if (this.filterMode !== "All") {
+                                    this.studentArray[this.reflectionMap[index]] = data;
+                                } else {
+                                    this.studentArray[index] = data;
+                                }
+                            });
                     })
+                    //If unsuccessful, add to errored edits
                     .catch((error) => {
-                        this.erroredEdits.push(this.studentArray[index].student_id);
+                        this.erroredEdits.push(this.displayArray[index].student_id);
                     });
             });
-
+            //Reset edited indices
             this.editedIndices = [];
-
+            //If there are errored edits, show the error popup
             if (this.erroredEdits.length > 0) {
                 this.editErrorPopup = true;
-            } else {
+            } else { //Else, show the success popup
                 this.title = "Successfully saved all changes.";
                 this.description = "The statuses have been successfully changed.";
                 this.acception = true;
                 this.showUpdatePopup = true;
             }
-
-            this.baseDataArray = duplicate(this.studentArray);
+            //duplicate displayArray to baseDataArray
+            this.baseDataArray = duplicate(this.displayArray);
         },
         deleteStudent(student_id, index) {
+            //Show delete confirmation popup
             this.currentPopup = "delete-confirmation";
             this.activeId = student_id;
             this.activeIndex = index;
         },
         async runDelete() {
+            //Call delete student api endpoint
             await this.$axios
                 .delete(`/students/${this.activeId}`)
+                //If successful, delete the student
                 .then(() => {
+                    //Close popup
                     this.currentPopup = null;
-                    this.studentArray.splice(this.activeIndex, 1);
-                    this.baseDataArray = duplicate(this.studentArray);
+                    //Delete the student
+                    this.displayArray.splice(this.activeIndex, 1);
+                    //If filter is not all, then reflect the deletion in the studentArray
+                    if (this.filterMode !== "All") {
+                        this.studentArray.splice(this.reflectionMap[this.activeIndex], 1);
+                    } else { //Else, keep the studentArray the same
+                        this.studentArray.splice(this.activeIndex, 1);
+                    }
+                    //duplicate displayArray to baseDataArray
+                    this.baseDataArray = duplicate(this.displayArray);
+
                     this.$emit("delete");
+                    this.title = "Successfully deleted Student.";
+                    this.description =
+                        "Student with the ID number " + this.activeId + " has been deleted.";
+                    this.acception = true;
+                    this.showUpdatePopup = true;
                 })
+                //If unsuccessful, show error popup
                 .catch((error) => {
                     this.showErrorPopup = true;
                 });
         },
+        // Get title for popup
         getTitle(accepted) {
             if (accepted) {
                 return "Student successfully accepted";
@@ -283,6 +384,7 @@ export default {
                 return "Student successfully rejected";
             }
         },
+        // Get description for popup
         getDescription(accepted, student_id, name) {
             if (accepted) {
                 return `Student ${name} with ID: ${student_id} has been successfully accepted`;
@@ -290,6 +392,7 @@ export default {
                 return `Student ${name} with ID: ${student_id} has been rejected`;
             }
         },
+        // Get color for popup
         getColor(accepted) {
             if (accepted) {
                 return "green";
@@ -297,39 +400,71 @@ export default {
                 return "red";
             }
         },
+        // Accept student
         accept(student_id, name, index) {
             this.title = this.getTitle(true);
             this.description = this.getDescription(true, student_id, name);
             this.acception = true;
+            // Update student status to active
             this.updateStudentStatus(student_id, "ACTIVE", index);
-        },
+        }, // Reject student
         reject(student_id, name, index) {
             this.title = this.getTitle(false);
             this.description = this.getDescription(false, student_id, name);
             this.color = this.getColor(false);
+            // Update student status to rejected
             this.updateStudentStatus(student_id, "REJECTED", index);
         },
+        // Update student status
         async updateStudentStatus(student_id, status, index) {
+            // Call update student status api endpoint
             await this.$axios
                 .patch(`/students/status/${student_id}`, {
                     status: status,
                 })
+                // If successfuls
                 .then(({ data }) => {
                     this.showUpdatePopup = true;
+                    if (this.filterMode !== "All") {
+                        this.displayArray.splice(index, 1);
+                    }
                 })
+                // If unsuccessful
                 .then(async () => {
-                    await this.$axios
-                        .get(`/students/id/${student_id}`)
-                        .then(({ data }) => (this.studentArray[index] = data));
+                    // Get student
+                    await this.$axios.get(`/students/id/${student_id}`).then(({ data }) => { // Update studentArrays
+                        if (this.filterMode !== "All") { //If filter is not all, update the studentArray
+                            this.studentArray[this.reflectionMap[index]] = data;
+                        } else { //Else, keep the studentArray the same
+                            this.studentArray[index] = data;
+                            this.displayArray[index] = data;
+                        }
+                    });
                 })
                 .catch((error) => {
                     this.showErrorPopup = true;
                 });
-
-            this.baseDataArray = duplicate(this.studentArray);
+                //duplicate displayArray to baseDataArray
+            this.baseDataArray = duplicate(this.displayArray);
+        },
+        // Add edited index
+        addEditedIndex(index) {
+            if (this.displayArray[index].status === this.baseDataArray[index].status) { //If the status is the same as the baseDataArray, remove from editedIndices
+                this.editedIndices.splice(this.editedIndices.indexOf(index), 1);
+                return;
+            } else if (!this.editedIndices.includes(index)) { //Else, add to editedIndices
+                this.editedIndices.push(index);
+            }
+        },
+    },
+    computed: {
+        // Check if there are any edited indices
+        wasEdited() {
+            return this.editedIndices.length > 0;
         },
     },
     async created() {
+        // Get students
         await this.getStudents().then(() => {
             this.render = true;
         });

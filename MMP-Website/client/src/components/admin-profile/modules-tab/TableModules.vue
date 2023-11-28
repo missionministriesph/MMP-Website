@@ -53,16 +53,28 @@ import axios from "axios";
                         <select
                             :class="{
                                 'text-edited':
-                                    baseModuleArray[index].teacher.teacher_id !==
-                                    moduleArray[index].teacher.teacher_id,
+                                    `${formatName(
+                                        baseModuleArray[index].teacher?.last_name,
+                                        baseModuleArray[index].teacher?.first_name
+                                    )} (${baseModuleArray[index].teacher?.teacher_id})` !==
+                                    updateHandlerArray[index],
                             }"
                             @change="addUnique(editedIndices, index)"
-                            v-model="module.teacher.teacher_id"
+                            v-model="updateHandlerArray[index]"
                         >
                             <option
-                                v-for="teacher in teacherArray"
-                                :value="teacher.teacher_id"
-                                :selected="teacher.teacher_id === module.teacher.teacher_id"
+                                v-for="teacher in Object.values(teacherMap)"
+                                :value="`${formatName(teacher.last_name, teacher.first_name)} (${
+                                    teacher.teacher_id
+                                })`"
+                                :selected="
+                                    `${formatName(
+                                        baseModuleArray[index].teacher?.last_name,
+                                        baseModuleArray[index].teacher?.first_name
+                                    )} (${baseModuleArray[index].teacher?.teacher_id})` ===
+                                    updateHandlerArray[index]
+                                "
+                                :disabled="teacher.status !== 'ACTIVE'"
                             >
                                 {{ formatName(teacher.last_name, teacher.first_name) }} ({{
                                     teacher.teacher_id
@@ -157,7 +169,8 @@ export default {
             // Data
             moduleArray: null,
             baseModuleArray: null,
-            teacherArray: null,
+            updateHandlerArray: [],
+            teacherMap: {},
             editedIndices: [],
             errorCount: 0,
             // Popups
@@ -173,7 +186,22 @@ export default {
                 .then(({ data }) => {
                     // Store data
                     this.moduleArray = data;
+                    // Store base data
                     this.baseModuleArray = duplicate(this.moduleArray);
+
+                    this.moduleArray.forEach((element) => { // Store teacher names
+                        if (element.teacher) { // If teacher exists
+                            this.updateHandlerArray.push( // Push teacher name
+                                `${formatName(
+                                    element.teacher.last_name,
+                                    element.teacher.first_name
+                                )} (${element.teacher.teacher_id})`
+                            );
+                        } else { // If teacher does not exist
+                            // Push empty string
+                            this.updateHandlerArray.push("");
+                        }
+                    });
                 })
                 // If unsuccessful
                 .catch((error) => {
@@ -186,29 +214,39 @@ export default {
                 // If successful
                 .then(({ data }) => {
                     // Store data
-                    this.teacherArray = data;
+                    data.forEach((element) => {
+                        this.teacherMap[element.teacher_id] = element;
+                    });
                 })
                 // If unsuccessful
                 .catch((error) => {
                     console.log(error);
                 });
         },
-        update() {
+        async update() {
             this.errorCount = 0;
 
-            this.editedIndices.forEach(async (index) => {
+            for (const index of this.editedIndices) { // For each edited index
                 await this.$axios
+                // Update teacher
                     .patch(
                         `/modules/teacher/${this.moduleArray[index].details.module_name}/${this.moduleArray[index].school_year}`,
                         {
-                            teacher_id: this.moduleArray[index].teacher.teacher_id,
+                            teacher_id:
+                                this.teacherMap[this.parseVal(this.updateHandlerArray[index])]
+                                    .teacher_id,
                         }
                     )
+                    // If successful
+                    .then(() => {
+                        this.moduleArray[index].teacher =
+                            this.teacherMap[this.parseVal(this.updateHandlerArray[index])];
+                    })
                     .catch((error) => {
                         this.errorCount++;
                     });
-            });
-
+            }
+            // if count of errors is greater than 0, show error popup, else show success popup
             if (this.errorCount > 0) {
                 this.currentPopup = "update-error";
             } else {
@@ -218,6 +256,11 @@ export default {
         },
         getProgram(program) {
             return formatEnum(program);
+        },
+        //Special parser returns the ID from a string (NOTE: The value must be in the form of "LASTNAME, FIRST NAME (ID)")
+        parseVal(value) {
+            const tokenized = value.split(/[()]/);
+            return tokenized[1];
         },
         // Add new module
         async addNewModule(data) {
@@ -238,10 +281,11 @@ export default {
         },
     },
     async created() {
-        await this.getAllModules().then(() => {
+        // Get all modules
+        await this.getAllModules();
+        await this.getAllTeachers().then(() => { // Get all teachers
             this.render = true;
         });
-        await this.getAllTeachers();
     },
 };
 </script>

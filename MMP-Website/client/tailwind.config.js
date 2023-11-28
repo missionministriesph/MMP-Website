@@ -6,7 +6,7 @@ module.exports = {
             colors: {
                 logo: "#236B51",
                 highlight: "#458579",
-                edited: "#00CACA",
+                edited: "#1FACC4",
                 highlight_hover: "#245B72",
                 background: "#51A98F",
                 background_pastel: "#E8F4F0",

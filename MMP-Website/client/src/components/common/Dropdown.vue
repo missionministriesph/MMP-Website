@@ -6,7 +6,7 @@ defineProps({
         required: true,
     },
     disabledOptions: Array,
-    defaultOption: String,
+    defaultOption: [String, Number],
 });
 // Emits
 defineEmits(["on-select"]);
@@ -47,13 +47,15 @@ defineEmits(["on-select"]);
                 aria-labelledby="dropdownDefaultButton"
             >
                 <li v-for="option in optionsArray">
-                    <button v-if="isDisabled(option)"
+                    <button
+                        v-if="isDisabled(option)"
                         :disabled="isDisabled(option)"
-                        class="relative w-full text-gray-400 block px-4 py-2 text-left text-gray-400"
+                        class="relative w-full text-gray-400 block px-4 py-2 text-left"
                     >
                         {{ option }}
                     </button>
-                    <button v-else
+                    <button
+                        v-else
                         @click="selectOption(option)"
                         :class="{
                             'font-bold bg-highlight text-white': option === selectedOption,
@@ -78,18 +80,16 @@ export default {
     },
     methods: {
         getFirstOption() {
-            if (this.defaultOption === undefined) {
+            if (this.defaultOption === undefined || this.defaultOption === null) {
                 for (let i = 0; i < this.optionsArray.length; i++) {
                     if (!this.isDisabled(this.optionsArray[i])) {
                         this.selectedOption = this.optionsArray[i];
                         break;
                     }
                 }
-            }
-            else if (this.optionsArray.includes(this.defaultOption)) {
+            } else if (this.optionsArray.includes(this.defaultOption)) {
                 this.selectedOption = this.defaultOption;
-            } 
-            else {
+            } else {
                 this.selectedOption = "Select a filter";
             }
         },

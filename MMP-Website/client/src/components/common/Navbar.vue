@@ -8,8 +8,8 @@ import PromptPopup from "./PromptPopup.vue";
 <template>
     <nav class="bg-white md:max-p-4 fixed w-full z-50 top-0 left-0 border-b border-gray-200">
         <div class="w-screen flex flex-wrap items-center justify-between mx-auto p-4">
-            <div class="flex items-center justify">
-                <router-link :to="store.account_type? store.account_type.toLowerCase() : '/'" class="flex items-center">
+            <div class="flex items-center justify order-first">
+                <router-link to="/" class="flex items-center">
                     <img src="https://i.imgur.com/yCabNBZ.png" class="h-8 mr-3" alt="MMP Logo" />
                     <span
                         class="hidden self-center text-2xl font-semibold whitespace-nowrap text-logo md:block"
@@ -21,7 +21,20 @@ import PromptPopup from "./PromptPopup.vue";
                     >
                 </router-link>
                 </div>
-                <div class="flex md:order-2">
+                <div v-if="store.isLoggedIn" class="md:hidden block">
+                    <button
+                        @click="redirectProfile()"
+                        class="block py-2 pl-3 pr-4 font-semibold text-gray-900 rounded hover:bg-gray-100 hover:underline md:hover:bg-transparent md:hover:text-highlight_hover md:p-0"
+                        :class="{
+                            'text-highlight': ['admin', 'teacher', 'student'].includes(
+                                $route.name
+                            ),
+                        }"
+                    >
+                        Profile
+                    </button>
+                </div>
+                <div class="flex order-last">
                     <router-link v-if="!store.isLoggedIn" to="/login">
                         <button
                             type="button"
@@ -41,7 +54,7 @@ import PromptPopup from "./PromptPopup.vue";
 
                 </div>
             <div
-                class="items-center justify-between hidden w-full md:flex md:w-auto md:order-1"
+                class="items-center justify-between hidden w-full md:flex md:w-auto md:order-1 order-none xl:mr-72"
                 id="navbar-sticky"
             >
                 <ul

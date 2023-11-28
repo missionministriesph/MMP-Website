@@ -1,4 +1,5 @@
 <script setup>
+// Components
 import LoginForm from "../../components/login/LoginForm.vue";
 import LogoLink from "../../components/common/LogoLink.vue";
 </script>

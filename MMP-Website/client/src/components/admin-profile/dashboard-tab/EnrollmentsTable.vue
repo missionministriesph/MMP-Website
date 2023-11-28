@@ -5,7 +5,7 @@ import LoadingSpinner from "../../common/LoadingSpinner.vue";
 </script>
 
 <template>
-    <LoadingSpinner v-if="!render" />
+    <LoadingSpinner v-if="!render" /> <!-- loading spinner while it is loading -->
     <div v-else class="overflow-x-auto shadow-md rounded-lg overflow-y-auto">
         <div class="overflow-x-auto shadow-md rounded-lg overflow-y-auto max-h-96">
             <table class="w-full text-gray-500 dark:text-gray-400 text-xl text-center">
@@ -20,6 +20,7 @@ import LoadingSpinner from "../../common/LoadingSpinner.vue";
                     </tr>
                 </thead>
                 <tbody>
+                    <!-- if enrollmentArray is empty, display No Enrollments Found-->
                     <tr
                         v-if="enrollmentArray === null || enrollmentArray.length === 0"
                         class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
@@ -31,6 +32,7 @@ import LoadingSpinner from "../../common/LoadingSpinner.vue";
                             No Enrollments Found
                         </th>
                     </tr>
+                    <!-- display all the enrollment details in the enrollmentArray-->
                     <tr
                         v-for="(enrollment, index) in enrollmentArray"
                         class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
@@ -144,6 +146,7 @@ export default {
                 });
         },
         getTitle(accepted) {
+            // If accepted, return Enrollment successfully accepted
             if (accepted) {
                 return "Enrollment successfully accepted";
             } else {
@@ -151,6 +154,7 @@ export default {
             }
         },
         getDescription(accepted, module_name, school_year, name) {
+            // If accepted, show that the student has been accepted
             if (accepted) {
                 return `Student ${name}'s ${module_name}-${school_year} has been successfully accepted`;
             } else {
@@ -158,33 +162,42 @@ export default {
             }
         },
         accept(module_name, school_year, student_id, name, index) {
+            // Set title and description
             this.title = this.getTitle(true);
             this.description = this.getDescription(true, module_name, school_year, name);
             this.acception = true;
+            // Update enrollment status to in progress
             this.updateEnrollmentStatus(module_name, school_year, student_id, "IN_PROGRESS", index);
         },
         reject(module_name, school_year, student_id, name, index) {
+            // Set title and description
             this.title = this.getTitle(false);
             this.description = this.getDescription(false, module_name, school_year, name);
+            // Update enrollment status to cancelled
             this.updateEnrollmentStatus(module_name, school_year, student_id, "CANCELLED", index);
         },
         async updateEnrollmentStatus(module_name, school_year, student_id, status, index) {
+            // Call update enrollment status api endpoint
             await this.$axios
                 .patch(`/module_enrollments/status/${student_id}/${module_name}/${school_year}`, {
                     status: status,
                 })
                 .then(({ data }) => {
+                    // Show popup
                     this.showUpdatePopup = true;
                 })
                 .then(async () => {
+                    // Remove enrollment from array
                     this.enrollmentArray.splice(index, 1);
                 })
                 .catch((error) => {
+                    // Show error popup
                     this.showErrorPopup = true;
                 });
         },
     },
     async created() {
+        // Get enrollments
         await this.getEnrollments().then(() => {
             this.render = true;
         });

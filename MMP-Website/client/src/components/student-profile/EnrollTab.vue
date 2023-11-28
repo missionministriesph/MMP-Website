@@ -50,6 +50,7 @@ import { formatDate, formatName, formatEnum } from "../../util/helpers";
                             <p class="font-medium">-</p>
                         </td>
                     </tr>
+                    <!-- display the module and the necessary info for every entry in the enrollable modules array-->
                     <tr
                         v-for="(module, index) in enrollableModulesArray"
                         class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-200"
@@ -73,6 +74,7 @@ import { formatDate, formatName, formatEnum } from "../../util/helpers";
                             {{ formatDate(module.session_2) }}
                         </td>
                         <td class="px-6 py-4">
+                            <!-- button for the user to enroll in that module-->
                             <button
                                 type="button"
                                 @click="clickEnroll(module, index)"
@@ -160,9 +162,12 @@ export default {
                     console.log(error);
                 });
         },
+        // Click Enroll
         clickEnroll(module, index) {
+            // Store module info
             this.module_name = module.details.module_name;
             this.school_year = module.school_year;
+            // Show enrollment popup
             this.showEnrollmentPopup = true;
             this.index = index;
         },

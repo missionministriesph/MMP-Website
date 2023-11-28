@@ -92,6 +92,19 @@ DownloadRouter.get("/modules", async (req, res) => {
             },
         });
 
+        // Empty enrollment object for modules with no enrollments
+        const empty_enrollment = {
+            student_id: "",
+            first_name: "",
+            middle_name: "",
+            last_name: "",
+            email: "",
+            grade: "",
+            no_of_absences: "",
+            remarks: "",
+        };
+        
+        // For each module, get all enrollments
         await Promise.all(
             modules.map(async (module) => {
                 let enrollments = await prisma.Module_Enrollments.findMany({
@@ -146,15 +159,147 @@ DownloadRouter.get("/modules", async (req, res) => {
 
                 // For each table, export as CSV
                 try {
+                    // Check if enrollments array is not empty
                     if (enrollments.length > 0) {
-                        // Check if enrollments array is not empty
+                        // Parse json to csv and add to zip
                         zip.file(
                             `${module.module_name} ${module.school_year}.csv`,
                             parseToCSV(enrollments)
                         );
                     } else {
-                        console.log(
-                            `No enrollments for ${module.module_name} ${module.school_year}`
+                        // Add csv with only keys to zip
+                        zip.file(
+                            `${module.module_name} ${module.school_year}.csv`,
+                            parseToCSV([empty_enrollment])
+                        );
+                    }
+                } catch (err) {
+                    console.error(
+                        "Problem exporting " +
+                            module.module_name +
+                            " " +
+                            module.school_year +
+                            ": " +
+                            err
+                    );
+                }
+            })
+        );
+
+        const blob = await zip.generateAsync({ type: "base64" });
+        console.log(`ADMIN [${req.user.user_id}] EXPORTED the database`);
+
+        res.send(blob);
+    } catch (error) {
+        // Return error
+        res.status(404).send({ error: error.message });
+    }
+});
+
+// Download Year Module Data as Zipped CSVs
+DownloadRouter.get("/modules/:school_year", async (req, res) => {
+    if (!allowed(req.permission, [3])) {
+        res.status(401).send({ error: "You are not authorized to access this" });
+        return;
+    }
+
+    try {
+        const school_year = parseInt(req.params.school_year);
+        const zip = new JSZip();
+
+        // Get All Combinations of Module Names in the Year
+        const modules = await prisma.Modules.findMany({
+            where: {
+                school_year: school_year,
+            },
+            select: {
+                module_name: true,
+                school_year: true,
+            },
+            orderBy: {
+                school_year: "desc",
+            },
+        });
+
+        // Empty enrollment object for modules with no enrollments
+        const empty_enrollment = {
+            student_id: "",
+            first_name: "",
+            middle_name: "",
+            last_name: "",
+            email: "",
+            grade: "",
+            no_of_absences: "",
+            remarks: "",
+        };
+        
+        // For each module, get all enrollments
+        await Promise.all(
+            modules.map(async (module) => {
+                let enrollments = await prisma.Module_Enrollments.findMany({
+                    where: {
+                        module_name: module.module_name,
+                        school_year: module.school_year,
+                    },
+                    select: {
+                        student: {
+                            select: {
+                                student_id: true,
+                                first_name: true,
+                                middle_name: true,
+                                last_name: true,
+                                email: true,
+                            },
+                        },
+                        grade: true,
+                        no_of_absences: true,
+                        remarks: true,
+                    },
+                    orderBy: {
+                        student: {
+                            student_id: "asc",
+                        },
+                    },
+                });
+
+                // Format Module Enrollments
+                enrollments.forEach((enrollment) => {
+                    enrollment.student_id = enrollment.student.student_id;
+                    enrollment.first_name = enrollment.student.first_name;
+                    enrollment.middle_name = enrollment.student.middle_name;
+                    enrollment.last_name = enrollment.student.last_name;
+                    enrollment.email = enrollment.student.email;
+                    delete enrollment.student;
+                });
+
+                // Reorder Module Enrollment Columns
+                enrollments = enrollments.map((enrollment) => {
+                    return {
+                        student_id: enrollment.student_id,
+                        first_name: enrollment.first_name,
+                        middle_name: enrollment.middle_name,
+                        last_name: enrollment.last_name,
+                        email: enrollment.email,
+                        grade: enrollment.grade,
+                        no_of_absences: enrollment.no_of_absences,
+                        remarks: enrollment.remarks,
+                    };
+                });
+
+                // For each table, export as CSV
+                try {
+                    // Check if enrollments array is not empty
+                    if (enrollments.length > 0) {
+                        // Parse json to csv and add to zip
+                        zip.file(
+                            `${module.module_name} ${module.school_year}.csv`,
+                            parseToCSV(enrollments)
+                        );
+                    } else {
+                        // Add csv with only keys to zip
+                        zip.file(
+                            `${module.module_name} ${module.school_year}.csv`,
+                            parseToCSV([empty_enrollment])
                         );
                     }
                 } catch (err) {

@@ -95,6 +95,7 @@ defineEmits(["on-back"]);
                             <th id="absences" scope="row" class="px-6 py-3 font-medium">-</th>
                             <th id="remarks" scope="row" class="px-6 py-3 font-medium">-</th>
                         </tr>
+                        <!-- display each module enrollment entry in the table-->
                         <tr
                             v-for="(enrollment, index) in moduleEnrollmentArray"
                             class="bg-white border-b hover:bg-gray-300"
@@ -176,6 +177,7 @@ defineEmits(["on-back"]);
             </div>
         </div>
         <br />
+        <!-- when export data button is clicked, then run exportData() function-->
         <button
             class="ml-auto mb-1 w-21 h-12 px-10 py-3 text-base font-medium text-center text-white bg-highlight rounded-lg hover:bg-highlight_hover"
             @click="exportData()"
@@ -285,22 +287,28 @@ export default {
                     console.log(error);
                 });
         },
+        // Switch to edit mode
         switchToEditMode() {
+            // Set edit mode to true
             this.editMode = true;
+            // Store backup of enrollments
             this.backupEnrollmentsArray = duplicate(this.moduleEnrollmentArray);
         },
         editGrade(grade, index) {
+            // Format grade
             let formattedGrade;
+            // If grade is not INC, format to 2 decimal places, else keep as INC
             if (grade !== "INC") {
                 formattedGrade = parseFloat(grade).toFixed(2).toString();
             } else {
                 formattedGrade = grade;
             }
+            // Validate grade, if valid, update grade, date submitted, date received, and status, else do nothing
             if (this.validateGrade(formattedGrade, index)) {
                 this.moduleEnrollmentArray[index].grade = formattedGrade;
                 this.moduleEnrollmentArray[index].date_submitted = new Date();
                 this.moduleEnrollmentArray[index].date_received = new Date();
-
+                // If grade is 5.00, set status to FAILED, else if grade is INC, set status to IN_PROGRESS, else set status to PASSED
                 if (formattedGrade === "5.00") {
                     this.moduleEnrollmentArray[index].status = "FAILED";
                 } else if (grade === "INC") {
@@ -308,20 +316,26 @@ export default {
                 } else {
                     this.moduleEnrollmentArray[index].status = "PASSED";
                 }
-
+                // Add index to changedIndices
                 addUnique(this.changedIndices, index);
             }
         },
+        // Edit absences
         editAbsences(absences, index) {
+            // Format absences to 0 decimal places
             const formattedAbsences = parseFloat(absences).toFixed(0);
+            // Validate absences, if valid, update absences, else do nothing
             if (this.validateAbsences(formattedAbsences, index)) {
                 this.moduleEnrollmentArray[index].no_of_absences = formattedAbsences;
+                // Add index to changedIndices
                 addUnique(this.changedIndices, index);
             }
         },
+        // Edit remarks
         editRemarks(index) {
             addUnique(this.changedIndices, index);
         },
+        // Cancel changes will revert all changes made
         cancelChanges() {
             this.editMode = false;
             this.moduleEnrollmentArray = duplicate(this.backupEnrollmentsArray);
@@ -332,6 +346,7 @@ export default {
             };
             this.currentPopup = null;
         },
+        // Save changes will validate all inputs and update all enrollments
         saveChanges() {
             if (this.validate()) {
                 this.currentPopup = "confirmation";
@@ -339,7 +354,7 @@ export default {
                 this.currentPopup = "invalid-inputs";
             }
         },
-        async updateEnrollments() {
+        async updateEnrollments() { // Update all enrollments, for each index in changedIndices, patch the enrollment, then get updated enrollments
             for (let index = 0; index < this.changedIndices.length; index++) {
                 const value = this.changedIndices[index];
                 await this.$axios
@@ -393,6 +408,7 @@ export default {
             }
         },
         validateGrade(grade, index) {
+            // these are the valid grades
             const validGrades = [
                 "1.00",
                 "1.25",
@@ -406,7 +422,7 @@ export default {
                 "5.00",
                 "INC",
             ];
-
+            // if grade is not in validGrades, add error, else remove error and return true
             if (!validGrades.includes(grade)) {
                 this.errors["grades"][parseInt(index)] =
                     "Invalid Grade Format! Valid Formats: [1.00, 1.25, 1.50, 1.75, 2.00, 2.25, 2.50, 2.75, 3.00, 5.00, INC]";
@@ -416,7 +432,9 @@ export default {
             }
             return false;
         },
+        // Validate absences
         validateAbsences(absences, index) {
+            // if absences is not a number, add error, else if absences is not between 0 and 2, add error, else remove error and return true
             if (isNaN(absences)) {
                 this.errors["absences"][parseInt(index)] = "Number of Absences must be a number!";
             } else if (absences < 0 || absences > 2) {
@@ -434,21 +452,26 @@ export default {
                 this.currentPopup = "editing-error";
                 return;
             }
-
+            // check if there are no enrollments
             if (this.moduleEnrollmentArray?.length < 1) {
                 this.currentPopup = "empty-array-error";
                 return;
             }
-
+            // create the csv data
             let csvData = "Student ID, Last Name, First Name, Middle Name, Grade, Absences\n";
 
+            // for each entry in the moduleEnrollmentArray
             this.moduleEnrollmentArray.forEach((entry) => {
+                // add each entry to the csv data
                 csvData += `${entry.student.student_id}, ${entry.student.last_name}, ${entry.student.first_name}, ${entry.student.middle_name}, ${entry.grade}, ${entry.no_of_absences} \r\n`;
             });
 
+            // create the csv file
             const csvContent = "data:text/csv;charset=utf-8," + csvData;
+            // create the download element
             const downloadElement = document.getElementById("download");
 
+            // set the download element's attributes
             downloadElement.setAttribute("href", encodeURI(csvContent));
             downloadElement.click();
         },

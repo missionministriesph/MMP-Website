@@ -210,14 +210,14 @@ export default {
             }
         },
         validatePayment() {
-            if (this.payment < 0 || this.payment > 999999999.99) {
+            if (this.payment < 1 || this.payment > 999999999.99 || this.payment == null) {
                 this.errors["payment"] = "Invalid payment value";
             } else {
                 delete this.errors["payment"];
             }
         },
         validatePaidOn() {
-            if (Date.parse(this.paid_on) === NaN) {
+            if (Number.isNaN(Date.parse(this.paid_on))) {
                 this.errors["paid_on"] = "Must be a valid date";
             } else {
                 delete this.errors["paid_on"];

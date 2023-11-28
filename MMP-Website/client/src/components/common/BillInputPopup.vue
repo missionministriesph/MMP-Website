@@ -239,21 +239,21 @@ export default {
             }
         },
         validateFee() {
-            if (this.fee < 0 || this.fee > 999999999.99) {
+            if (this.fee < 0 || this.fee > 999999999.99 || this.fee == null) {
                 this.errors["fee"] = "Invalid fee value";
             } else {
                 delete this.errors["fee"];
             }
         },
         validateDeductions() {
-            if (this.deductions < 0 || this.deductions > 999999999.99) {
+            if (this.deductions < 0 || this.deductions > 999999999.99 || this.deductions == null) {
                 this.errors["deductions"] = "Invalid deductions value";
             } else {
                 delete this.errors["deductions"];
             }
         },
         validateIssuedOn() {
-            if (Date.parse(this.issued_on) === NaN) {
+            if (Number.isNaN(Date.parse(this.issued_on))) {
                 this.errors["issued_on"] = "Must be a valid date";
             } else {
                 delete this.errors["issued_on"];

@@ -11,9 +11,6 @@ import { useCredentialsStore } from "../../store/store";
 // Helpers
 import { formatName } from "../../util/helpers";
 </script>
-<!--
-  TODO: implement features in https://cssweng.atlassian.net/jira/software/projects/SCRUM/boards/1/backlog?selectedIssue=SCRUM-22
--->
 <template>
     <div class="flex flex-row min-h-screen">
         <aside class="z-10 w-64 bg-background_pastel py-4 px-2 pt-28 fixed inset-y-0 left-0 md:pt-20 md:block md:-translate-x-0 transform -translate-x-full transition duration-200 ease-in-out"

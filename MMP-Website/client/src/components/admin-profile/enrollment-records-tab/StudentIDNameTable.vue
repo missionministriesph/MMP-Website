@@ -27,6 +27,7 @@ defineEmits(["select-student"]);
                 <tr>
                     <th scope="col" class="px-6 py-3">ID Number</th>
                     <th scope="col" class="px-6 py-3 text-center">Student Name</th>
+                    <th scope="col" class="px-6 py-3">Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -45,9 +46,9 @@ defineEmits(["select-student"]);
                 <tr
                     v-else
                     v-for="student in studentArray"
-                    @click="$emit('select-student', student.student_id)"
                     class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
                 >
+                <!-- display info of the students from studentArray-->
                     <th
                         scope="row"
                         class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
@@ -56,6 +57,15 @@ defineEmits(["select-student"]);
                     </th>
                     <td class="px-6 py-4">
                         {{ formatName(student.first_name, student.last_name) }}
+                    </td>
+                    <td class="px-6 py-4">
+                        <button
+                            @click="$emit('select-student', student.student_id)"
+                            type="button"
+                            class="xl:w-auto w-full mr-3 mb-3 xl:mb-0 text-white bg-highlight hover:bg-highlight_hover focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600 whitespace-pre-line"
+                        >
+                            View Student Data
+                        </button>
                     </td>
                 </tr>
             </tbody>
@@ -74,18 +84,19 @@ export default {
         };
     },
     methods: {
+        // Get student array
         async getStudentArray() {
             switch (this.filter) {
-                case "All Students":
+                case "All Students": // Get all students
                     this.getAllStudents();
                     break;
-                case "Currently Enrolled Students":
+                case "Currently Enrolled Students": // Get in progress students
                     this.getInProgressStudents();
                     break;
-                case "Incomplete Students":
+                case "Incomplete Students": // Get unpaid students
                     this.getUnpaidStudents();
                     break;
-                case "Module Specific":
+                case "Module Specific": // Get module specific students
                     this.getModuleSpecificStudents();
                     break;
             }
@@ -145,11 +156,13 @@ export default {
         },
     },
     watch: {
+        // Watch for changes in filter
         async filter() {
             await this.getStudentArray().then(() => {
                 this.render = true;
             });
         },
+        // Watch for changes in selected module
         async selectedModule() {
             await this.getStudentArray().then(() => {
                 this.render = true;
@@ -157,6 +170,7 @@ export default {
         },
     },
     async created() {
+        // Get student array
         await this.getStudentArray().then(() => {
             this.render = true;
         });

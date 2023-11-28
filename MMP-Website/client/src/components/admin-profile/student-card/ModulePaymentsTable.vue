@@ -337,6 +337,7 @@ defineEmits(["add-success", "delete-success"]);
 export default {
     data() {
         return {
+            // Data
             currentPopup: null,
             activeModule: null,
             selectedBillNumber: null,
@@ -345,15 +346,18 @@ export default {
             unalteredCopy: null,
             editedIndex: null,
             editedIndices: [],
-            errors: {},
+            errors: {}, // {index: {field: error}}
             statuses: ["FULLY_PAID", "PARTIALLY_PAID", "UNPAID"],
-            errored_edits: [],
+            errored_edits: [], // [bill_no]
         };
     },
     methods: {
+        // Data
         async updateData() {
+            // Update all edited bills
             this.errored_edits = [];
-            for (const index of this.editedIndices) {
+            for (const index of this.editedIndices) { // for each edited bill
+                // Update bill
                 const value = {
                     status: this.displayData[index].bill.status,
                     fee: this.displayData[index].bill.fee,
@@ -362,6 +366,7 @@ export default {
                     billed_to: this.student_id,
                 };
 
+                // Send patch request
                 await this.$axios
                     .patch(`/bills/${this.displayData[index].bill.bill_no}`, value)
                     .catch(() => {
@@ -369,26 +374,30 @@ export default {
                     });
             }
 
-            if (this.errored_edits.length > 1) {
+            if (this.errored_edits.length > 1) { // if there are multiple errors, show error-edit popup
                 this.currentPopup = "errored-edits";
-            } else {
+            } else { // else show success popup
                 this.currentPopup = "success";
             }
 
             this.editMode = false;
         },
         switchToEditMode() {
+            // set edit mode to true and create a copy of the data
             this.editMode = true;
             this.unalteredCopy = duplicate(this.finance_info);
         },
+        // save changes
         saveChanges() {
-            if (this.validate()) {
+            if (this.validate()) { // if all inputs are valid, show confirmation popup
                 this.currentPopup = "confirmation";
-            } else {
+            } else { // else show invalid inputs popup
                 this.currentPopup = "invalid-inputs";
             }
         },
+        // Cancel changes
         cancelChanges() {
+            // set edit mode to false and reset data
             this.editMode = false;
             this.displayData = duplicate(this.unalteredCopy);
             this.unalteredCopy = null;
@@ -397,6 +406,7 @@ export default {
             this.currentPopup = null;
         },
         async runDelete() {
+            // Send delete request
             await this.$axios
                 .delete(
                     `/bills/delete/${this.selectedBillNumber}/${this.activeModule.module_name}/${this.activeModule.school_year}/${this.student_id}`
@@ -410,38 +420,43 @@ export default {
                     this.currentPopup = "error";
                 });
         },
+        // method to delete bill
         deleteBill(selectedBill, activeModule, index) {
+            // Show delete confirmation popup
             this.currentPopup = "delete-bill-confirmation";
             this.selectedBillNumber = selectedBill;
             this.activeModule = activeModule;
             this.editedIndex = index;
         },
+        // method to add bill
         addBill(module, index) {
             this.currentPopup = "add-bill";
             this.activeModule = module;
             this.editedIndex = index;
         },
         async addSuccess(bill) {
+            // show add success popup
             this.currentPopup = "add";
             await this.$axios.get(`/bills/${bill.bill_no}`).then(({ data }) => {
                 this.displayData[this.editedIndex].bill = data;
             });
             this.$emit("add-success");
         },
-        getBalance(entry) {
+        getBalance(entry) { // get balance of bill
             const total = entry.bill.fee - entry.bill.deductions;
 
             let paid = 0;
-            for (const payment of entry.bill?.payments) {
-                paid += parseInt(payment.payment);
+            for (const payment of entry.bill?.payments) { // for each payment
+                paid += parseInt(payment.payment); // add to total paid
             }
 
-            return total - paid;
+            return total - paid; // return balance
         },
         getOR(payments) {
+            // get ORs and return as string
             let orString = "";
 
-            for (let i = 0; i < payments.length; i++) {
+            for (let i = 0; i < payments.length; i++) { //for each payment, add to string, add comma if not last
                 if (i !== payments.length - 1) {
                     orString += `${payments[i].or_no}, `;
                 } else {
@@ -452,9 +467,10 @@ export default {
             return orString;
         },
         getPayments(payments) {
+            // get payments and return as string
             let paymentString = "";
 
-            for (let i = 0; i < payments.length; i++) {
+            for (let i = 0; i < payments.length; i++) { //for each payment, add to string, add comma if not last
                 if (i !== payments.length - 1) {
                     paymentString += `${payments[i].payment}, `;
                 } else {
@@ -465,6 +481,7 @@ export default {
             return paymentString;
         },
         getPaymentDates(payments) {
+            // get payment dates and return as string
             let dateString = "";
 
             for (let i = 0; i < payments.length; i++) {
@@ -478,17 +495,18 @@ export default {
             return dateString;
         },
         getRemarks(payments) {
+            // get remarks and return as string
             let remarksString = "";
 
             for (let i = 0; i < payments.length; i++) {
                 if (i !== payments.length - 1) {
-                    if (payments[i].remarks === null) {
+                    if (payments[i].remarks === null) { // if no remarks, add "No remarks", add comma if not last
                         remarksString += `No remarks, `;
                     } else {
                         remarksString += `${payments[i].remarks}, `;
                     }
                 } else {
-                    if (payments[i].remarks === null) {
+                    if (payments[i].remarks === null) {// if no remarks, add "No remarks"
                         remarksString += `No remarks `;
                     } else {
                         remarksString += `${payments[i].remarks} `;
@@ -499,6 +517,8 @@ export default {
             return remarksString;
         },
         editFee(fee, index) {
+            // if fee is valid, set fee and add index to editedIndices
+            // fee is formatted to 2 decimal places
             const formattedFee = parseFloat(fee).toFixed(2);
             if (this.validateFee(formattedFee, index)) {
                 this.displayData[index].bill.fee = formattedFee;
@@ -506,6 +526,7 @@ export default {
             }
         },
         editDeduction(deduction, index) {
+            // if deduction is valid, set deduction and add index to editedIndices
             const formattedDeduction = parseFloat(deduction).toFixed(2);
             if (this.validateDeductions(formattedDeduction, index)) {
                 this.displayData[index].bill.deductions = formattedDeduction;
@@ -513,12 +534,14 @@ export default {
             }
         },
         editStatus(status, index) {
+            // if status is valid, set status and add index to editedIndices
             if (this.validateStatus(status, index)) {
                 this.displayData[index].bill.status = status;
                 addUnique(this.editedIndices, index);
             }
         },
         editIssuedOn(issued_on, index) {
+            // if issued_on is valid, set issued_on and add index to editedIndices
             if (this.validateIssuedOn(issued_on, index)) {
                 this.displayData[index].bill.issued_on = issued_on;
                 addUnique(this.editedIndices, index);
@@ -534,6 +557,7 @@ export default {
             });
 
             if (
+                // if every key in errors has no errors, return true
                 Object.keys(this.errors).every((key) => Object.keys(this.errors[key]).length === 0)
             ) {
                 return true;
@@ -542,10 +566,11 @@ export default {
             }
         },
         validateStatus(status, index) {
+            // if status is valid, delete error and return true
             this.errors[index] = {};
-            if (!this.statuses.includes(status)) {
+            if (!this.statuses.includes(status)) { // if status is not in statuses, add error
                 this.errors[index]["status"] = "Must be a valid status";
-            } else {
+            } else { // else delete error
                 delete this.errors[index]["status"];
                 return true;
             }
@@ -553,8 +578,9 @@ export default {
             return false;
         },
         validateFee(fee, index) {
+            // if fee is valid, delete error and return true
             this.errors[index] = {};
-            if (fee < 0 || fee > 999999999.99) {
+            if (fee < 0 || fee > 999999999.99) { // if fee is not in range, add error
                 this.errors[index]["fee"] = "Invalid fee value";
             } else {
                 delete this.errors[index]["fee"];
@@ -564,8 +590,9 @@ export default {
             return false;
         },
         validateDeductions(deductions, index) {
+            // if deductions is valid, delete error and return true
             this.errors[index] = {};
-            if (deductions < 0 || deductions > 999999999.99) {
+            if (deductions < 0 || deductions > 999999999.99) { // if deductions is not in range, add error
                 this.errors[index]["deductions"] = "Invalid deductions value";
             } else {
                 delete this.errors[index]["deductions"];
@@ -575,8 +602,9 @@ export default {
             return false;
         },
         validateIssuedOn(issued_on, index) {
+            // if issued_on is valid, delete error and return true
             this.errors[index] = {};
-            if (Date.parse(issued_on) === NaN) {
+            if (Date.parse(issued_on) === NaN) { // if issued_on is not a valid date, add error
                 this.errors[index]["issued_on"] = "Must be a valid date";
             } else {
                 delete this.errors[index]["issued_on"];
@@ -587,6 +615,7 @@ export default {
         },
     },
     created() {
+        // set displayData to finance_info
         this.displayData = duplicate(this.finance_info);
     },
     watch: {

@@ -202,7 +202,7 @@ export default {
                 this.bill_no = data.bill_no;
                 this.payee = data.payee;
                 this.payment = data.payment;
-                this.paid_on = data.paid_on;
+                this.paid_on = formatDate(data.paid_on);
                 this.remarks = data.remarks;
             });
         },
@@ -229,14 +229,14 @@ export default {
             }
         },
         validatePayment() {
-            if (this.payment < 0 || this.payment > 999999999.99) {
+            if (this.payment < 1 || this.payment > 999999999.99 || this.payment == null) {
                 this.errors["payment"] = "Invalid payment value";
             } else {
                 delete this.errors["payment"];
             }
         },
         validatePaidOn() {
-            if (Date.parse(this.paid_on) === NaN) {
+            if (Number.isNaN(Date.parse(this.paid_on))) {
                 this.errors["paid_on"] = "Must be a valid date";
             } else {
                 delete this.errors["paid_on"];

@@ -14,7 +14,7 @@ const AuthRouter = express.Router();
 AuthRouter.post("/login", async (req, res) => {
     try {
         // Get data from request body json
-        const { user_id, password, rememberMe } = req.body;
+        const { user_id, password } = req.body;
 
         let user = null;
         let userPassword = null;
@@ -123,8 +123,7 @@ AuthRouter.post("/login", async (req, res) => {
         // Create signed token with user id
         // Expires in 14 days if rememberMe is true, else 60 seconds
         // Include user_id and account_type in token
-        // TODO: Sessions if Possible (Doubt it)
-        let expiresIn = rememberMe ? "14d" : "60s";
+        let expiresIn = "14d";
         const token = jwt.sign(
             {
                 account_type: userType,

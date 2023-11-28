@@ -1,5 +1,7 @@
 <script setup>
+// Store
 import { useCredentialsStore } from "../../store/store";
+// Components
 import LogoLink from "../../components/common/LogoLink.vue";
 import TeacherSignupForm from "../../components/signup/TeacherSignupForm.vue";
 </script>

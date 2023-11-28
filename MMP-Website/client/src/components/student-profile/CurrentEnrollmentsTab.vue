@@ -13,7 +13,6 @@ const currentYear = new Date().getFullYear();
     <LoadingSpinner v-if="!render" />
     <div v-else class="w-full grid">
         <h1 class="text-4xl font-bold mb-4">Grades</h1>
-        <!-- TODO: Change the header -->
         <h2 class="text-xl font-semibold mb-4">AY. {{ currentYear }} - {{ currentYear + 1 }}</h2>
 
         <div class="overflow-x-auto shadow-md rounded-lg mb-10">
@@ -49,6 +48,7 @@ const currentYear = new Date().getFullYear();
                             <p class="font-medium">-</p>
                         </td>
                     </tr>
+                    <!-- display the current modules one by one with the necessary data-->
                     <tr
                         v-for="module in currentModulesArray"
                         class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-200"

@@ -9,9 +9,7 @@ import StudentCard from "../../components/admin-profile/student-card/StudentCard
 // Store
 import { useCredentialsStore } from "../../store/store";
 </script>
-<!--
-    TODO: implement features in https://cssweng.atlassian.net/jira/software/projects/SCRUM/boards/1/backlog?selectedIssue=SCRUM-24
--->
+
 <template>
     <div class="flex flex-row min-h-screen">
         <aside

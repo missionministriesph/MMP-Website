@@ -62,6 +62,7 @@ export default {
                 "Incomplete Students",
                 "Module Specific",
             ],
+            // Module Options
             moduleOptions: [
                 "FOUNDATIONAL COURSES",
                 "Child and Development",
@@ -82,6 +83,7 @@ export default {
                 "Strategic Planning",
                 "Practicum 2",
             ],
+            // Disabled Module Options
             disabledModuleOptions: [
                 "FOUNDATIONAL COURSES",
                 "TEACHER'S TRACK",

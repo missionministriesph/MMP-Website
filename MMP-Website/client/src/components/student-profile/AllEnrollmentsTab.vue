@@ -29,6 +29,7 @@ import { formatDate, formatName, formatEnum } from "../../util/helpers";
                     </tr>
                 </thead>
                 <tbody>
+                    <!-- if no enrolled modules in array, then display there are none, else display them one by one in the table-->
                     <tr
                         v-if="
                             allEnrolledModulesArray === null || allEnrolledModulesArray.length === 0
@@ -120,6 +121,7 @@ export default {
         },
     },
     async created() {
+        // Get all enrolled modules
         await this.getAllEnrolledModules().then(() => {
             this.render = true;
         });

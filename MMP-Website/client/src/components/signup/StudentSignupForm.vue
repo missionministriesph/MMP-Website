@@ -1,6 +1,7 @@
 <script setup>
 import MessagePopup from "../../components/common/MessagePopup.vue";
 import ErrorMessagePopup from "../../components/common/ErrorMessagePopup.vue";
+import LoadingSpinner from "../common/LoadingSpinner.vue";
 </script>
 
 <template>
@@ -733,12 +734,12 @@ import ErrorMessagePopup from "../../components/common/ErrorMessagePopup.vue";
                         type="emergency_name"
                         id="emergencyname"
                         class="shadow-sm bg-gray-100 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                        placeholder="First Name"
+                        placeholder="Emergency Contact Name"
                         required
                         autocomplete="off"
                         v-model="emergency_name"
                     />
-                    <div class="input-errors" v-if="errors.highschool">
+                    <div class="input-errors" v-if="errors.emergency_name">
                         <div class="block mb-2 text-sm font-medium text-red-500">
                             {{ errors.emergency_name }}
                         </div>
@@ -899,6 +900,7 @@ import ErrorMessagePopup from "../../components/common/ErrorMessagePopup.vue";
 
 <script>
 export default {
+    //  this is the data that will be used in the form
     data() {
         return {
             firstname: "",
@@ -950,12 +952,17 @@ export default {
         };
     },
     methods: {
+        // change signup form type to teachers
         swapForm() {
             this.$router.push("/teacher/signup");
         },
+
+        // BELOW ARE THE VALIDATORS TO CHECK IF THE DATA ARE VALID FOR SIGNING UP
         validateFirstName() {
             if (this.firstname.length < 2 || this.firstname.length > 50) {
                 this.errors["firstname"] = "First name must be between 2 and 50 characters!";
+            } else if (/\d/.test(this.firstname)) {
+                this.errors["firstname"] = "First name must not have numbers!";
             } else {
                 delete this.errors["firstname"];
             }
@@ -963,6 +970,8 @@ export default {
         validateLastName() {
             if (this.lastname.length < 2 || this.lastname.length > 50) {
                 this.errors["lastname"] = "Last name must be between 2 and 50 characters!";
+            } else if (/\d/.test(this.lastname)) {
+                this.errors["lastname"] = "Last name must not have numbers!";
             } else {
                 delete this.errors["lastname"];
             }
@@ -975,6 +984,8 @@ export default {
 
             if (this.middlename.length < 2 || this.middlename.length > 50) {
                 this.errors["middlename"] = "Middle name must be between 2 and 50 characters!";
+            } else if (/\d/.test(this.middlename)) {
+                this.errors["middlename"] = "Middle name must not have numbers!";
             } else {
                 delete this.errors["middlename"];
             }
@@ -1261,6 +1272,10 @@ export default {
             if (this.emergency_name.length > 150) {
                 this.errors["emergency_name"] =
                     "Emergency name should be less than 150 characters long";
+            } else if (/\d/.test(this.emergency_name)) {
+                this.errors["emergency_name"] = "Emergency contact name should not have numbers";
+            } else if (this.emergency_name.length > 150) {
+                this.errors["emergency_name"] = "Emergency name should not be empty";
             } else {
                 delete this.errors["emergency_name"];
             }
@@ -1269,6 +1284,8 @@ export default {
             if (this.emergency_address.length > 150) {
                 this.errors["emergency_address"] =
                     "Emergency address should be less than 150 characters long";
+            } else if (this.emergency_address.length < 1) {
+                this.errors["emergency_address"] = "Emergency address should not be empty";
             } else {
                 delete this.errors["emergency_address"];
             }
@@ -1290,6 +1307,7 @@ export default {
             }
         },
         validateForm() {
+            // Validate all fields
             this.validateFirstName();
             this.validateLastName();
             this.validateMiddleName();
@@ -1325,7 +1343,7 @@ export default {
             this.validateEmergencyNumber();
             this.validateAgreeTerms();
 
-            if (Object.keys(this.errors).length === 0) {
+            if (Object.keys(this.errors).length === 0) { // If no errors, return true
                 return true;
             } else {
                 return false;

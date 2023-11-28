@@ -70,7 +70,7 @@ defineEmits(["on-confirm", "on-exit"]);
                             Enter details for the new module below.
                         </p>
                         <!--make a form that asks the user for the module name, dropdown with list of all teachers, program name, session1, session2-->
-                        <div class="flex flex-col mb-6">
+                        <div class="flex flex-col mb-4">
                             <label
                                 for="teacher-name"
                                 class="mb-1 text-xs sm:text-sm tracking-wide text-gray-600 dark:text-gray-400"
@@ -93,24 +93,60 @@ defineEmits(["on-confirm", "on-exit"]);
                                     </option>
                                 </select>
                             </div>
-                        </div>
-                        <div class="flex flex-col mb-6">
-                            <label
-                                class="mb-1 text-xs sm:text-sm tracking-wide text-gray-600 dark:text-gray-400"
-                            >
-                                Program
-                            </label>
-                            <div class="relative">
-                                <p
-                                    id="module-program"
-                                    name="module-program"
-                                    class="text-sm sm:text-base relative text-black w-full border rounded outline-none py-2 pr-2 pl-2"
-                                >
-                                    {{ formatEnum(selectedModule?.program) || "Select a module" }}
-                                </p>
+                            <div class="input-errors" v-if="errors.selectedModule">
+                                <div class="block mb-2 text-sm font-medium text-red-500">
+                                    {{ errors.selectedModule }}
+                                </div>
                             </div>
                         </div>
-                        <div class="flex flex-col mb-6">
+                        <div class="flex justify-between mb-5">
+                            <div class="w-48">
+                                <label
+                                    class="mb-1 text-xs sm:text-sm tracking-wide text-gray-600 dark:text-gray-400"
+                                >
+                                    Program
+                                </label>
+                                <div class="relative">
+                                    <p
+                                        id="module-program"
+                                        name="module-program"
+                                        class="text-sm sm:text-base relative text-black w-full border rounded outline-none py-2 pr-2 pl-2"
+                                    >
+                                        {{ formatEnum(selectedModule?.program) || "Select a module" }}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="w-48">
+                                <label
+                                    for="teacher-name"
+                                    class="mb-1 text-xs sm:text-sm tracking-wide text-gray-600 dark:text-gray-400"
+                                >
+                                    School Year
+                                </label>
+                                <div class="relative">
+                                    <select
+                                        id="school-year"
+                                        v-model="school_year"
+                                        name="school-year"
+                                        class="text-sm sm:text-base relative text-black w-full border rounded placeholder-gray-400 focus:border-blue-400 focus:outline-none py-2 pr-2 pl-2"
+                                    >
+                                        <option
+                                            :key="currentYear - 1"
+                                            :value="currentYear - 1"
+                                        >
+                                            {{ formatSchoolYearAsInterval(currentYear - 1) }} ({{ currentYear - 1 }})
+                                        </option>
+                                        <option
+                                            :key="currentYear"
+                                            :value="currentYear"
+                                        >
+                                            {{ formatSchoolYearAsInterval(currentYear) }} ({{ currentYear }})
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col mb-4">
                             <label
                                 for="teacher-name"
                                 class="mb-1 text-xs sm:text-sm tracking-wide text-gray-600 dark:text-gray-400"
@@ -135,50 +171,57 @@ defineEmits(["on-confirm", "on-exit"]);
                                     </option>
                                 </select>
                             </div>
-                        </div>
-                        <div class="flex flex-col mb-6">
-                            <label
-                                for="session1"
-                                class="mb-1 text-xs sm:text-sm tracking-wide text-gray-600 dark:text-gray-400"
-                            >
-                                Session 1
-                            </label>
-                            <div class="relative">
-                                <input
-                                    id="session1"
-                                    v-model="session_1"
-                                    type="date"
-                                    name="session1"
-                                    placeholder="Enter Session 1"
-                                    class="text-sm sm:text-base relative w-full border rounded placeholder-gray-400 focus:border-blue-400 focus:outline-none py-2 pr-2 pl-2"
-                                />
-                            </div>
-                            <div class="input-errors" v-if="errors.session_1">
+                            <div class="input-errors" v-if="errors.teacher_id">
                                 <div class="block mb-2 text-sm font-medium text-red-500">
-                                    {{ errors.session_1 }}
+                                    {{ errors.teacher_id }}
                                 </div>
                             </div>
                         </div>
-                        <div class="flex flex-col mb-6">
-                            <label
-                                for="session2"
-                                class="mb-1 text-xs sm:text-sm tracking-wide text-gray-600 dark:text-gray-400"
-                            >
-                                Session 2
-                            </label>
-                            <div class="relative">
-                                <input
-                                    id="session2"
-                                    v-model="session_2"
-                                    type="date"
-                                    name="session2"
-                                    placeholder="Enter Session 2"
-                                    class="text-sm sm:text-base relative w-full border rounded placeholder-gray-400 focus:border-blue-400 focus:outline-none py-2 pr-2 pl-2"
-                                />
+                        <div class="flex justify-between mb-8">
+                            <div class="w-48">
+                                <label
+                                    for="session1"
+                                    class="mb-1 text-xs sm:text-sm tracking-wide text-gray-600 dark:text-gray-400"
+                                >
+                                    Session 1
+                                </label>
+                                <div class="relative">
+                                    <input
+                                        id="session1"
+                                        v-model="session_1"
+                                        type="date"
+                                        name="session1"
+                                        placeholder="Enter Session 1"
+                                        class="text-sm sm:text-base relative w-full border rounded placeholder-gray-400 focus:border-blue-400 focus:outline-none py-2 pr-2 pl-2"
+                                    />
+                                </div>
+                                <div class="input-errors" v-if="errors.session_1">
+                                    <div class="block mb-2 text-sm font-medium text-red-500">
+                                        {{ errors.session_1 }}
+                                    </div>
+                                </div>
                             </div>
-                            <div class="input-errors" v-if="errors.session_2">
-                                <div class="block mb-2 text-sm font-medium text-red-500">
-                                    {{ errors.session_2 }}
+                            <div class="w-48">
+                                <label
+                                    for="session2"
+                                    class="mb-1 text-xs sm:text-sm tracking-wide text-gray-600 dark:text-gray-400"
+                                >
+                                    Session 2
+                                </label>
+                                <div class="relative">
+                                    <input
+                                        id="session2"
+                                        v-model="session_2"
+                                        type="date"
+                                        name="session2"
+                                        placeholder="Enter Session 2"
+                                        class="text-sm sm:text-base relative w-full border rounded placeholder-gray-400 focus:border-blue-400 focus:outline-none py-2 pr-2 pl-2"
+                                    />
+                                </div>
+                                <div class="input-errors" v-if="errors.session_2">
+                                    <div class="block mb-2 text-sm font-medium text-red-500">
+                                        {{ errors.session_2 }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -212,9 +255,11 @@ export default {
             // Retried Data
             moduleArray: null,
             teacherArray: null,
+            currentYear: new Date().getFullYear(),
             // Input Data
-            selectedModule: Object(),
-            teacher_id: "",
+            selectedModule: null,
+            school_year: new Date().getFullYear(),
+            teacher_id: null,
             session_1: null,
             session_2: null,
             // Error
@@ -260,13 +305,16 @@ export default {
                     console.log(error);
                 });
         },
+        formatSchoolYearAsInterval(school_year) {
+            return `${school_year} - ${school_year + 1}`;
+        },
         // Submit form
         submitForm() {
             // Validate form
             if (this.validateForm()) {
                 const newModule = {
                     module_name: this.selectedModule.module_name,
-                    school_year: new Date().getFullYear(),
+                    school_year: this.school_year,
                     teacher_id: this.teacher_id,
                     program: this.selectedModule.program,
                     session_1: this.session_1,
@@ -276,6 +324,8 @@ export default {
             }
         },
         validateForm() {
+            this.validateSelectedModule();
+            this.validateTeacherId();
             this.validateSession1();
             this.validateSession2();
 
@@ -285,30 +335,83 @@ export default {
                 return false;
             }
         },
+        // Check if selected module is valid
+        validateSelectedModule() {
+            // If selected module is null
+            if (this.selectedModule === null || this.selectedModule === undefined) {
+                this.errors["selectedModule"] = "Must select a module";
+            } 
+            // If selected module is valid
+            else {
+                delete this.errors["selectedModule"];
+            }
+        },
+        // Check if teacher id is valid
+        validateTeacherId() {
+            // If teacher id is null
+            if (this.teacher_id === null || this.teacher_id === undefined) {
+                this.errors["teacher_id"] = "Must select a teacher";
+            } 
+            // If teacher id is valid
+            else {
+                delete this.errors["teacher_id"];
+            }
+        },
+        // Check if session 1 is valid
         validateSession1() {
+            // If session 1 is null or not a valid date
             if (this.session_1 === null || Date.parse(this.session_1) === NaN) {
                 this.errors["session_1"] = "Must be a valid date";
-            } else if (Date.parse(this.session_1) < Date.now()) {
+            } 
+            // If session 1 is in the past
+            else if (Date.parse(this.session_1) < Date.now()) {
                 this.errors["session_1"] = "Session 1 must be in the future";
-            } else if (Date.parse(this.session_1) >= Date.parse(this.session_2)) {
-                this.errors["session_2"] = "Session 1 must be before Session 2";
-            } else {
+            }
+            // If session 1 is after or on the day of session 2
+            else if (Date.parse(this.session_1) >= Date.parse(this.session_2)) {
+                this.errors["session_1"] = "Session 1 must be before Session 2";
+            }
+            // If session 1 is after June 1 of the next school year
+            else if (Date.parse(this.session_1) >= Date.parse(`June 1, ${this.school_year + 1}`)) {
+                this.errors["session_1"] = `School year ${this.formatSchoolYearAsInterval(this.school_year)} must finish before June 1, ${this.school_year + 1}`;
+            } 
+            // If session 1 is valid
+            else {
                 delete this.errors["session_1"];
             }
         },
+        // Check if session 2 is valid
         validateSession2() {
+            // If session 2 is null or not a valid date
             if (this.session_2 === null || Date.parse(this.session_2) === NaN) {
                 this.errors["session_2"] = "Must be a valid date";
-            } else if (Date.parse(this.session_2) < Date.now()) {
+            } 
+            // If session 2 is in the past
+            else if (Date.parse(this.session_2) < Date.now()) {
                 this.errors["session_2"] = "Session 2 must be in the future";
-            } else if (Date.parse(this.session_2) <= Date.parse(this.session_1)) {
+            }
+            // If session 2 is before or on the day of session 1
+            else if (Date.parse(this.session_2) <= Date.parse(this.session_1)) {
                 this.errors["session_2"] = "Session 2 must be after Session 1";
-            } else {
+            } 
+            // If session 2 is after June 1 of the next school year
+            else if (Date.parse(this.session_2) >= Date.parse(`June 1, ${this.school_year + 1}`)) {
+                this.errors["session_2"] = `School year ${this.formatSchoolYearAsInterval(this.school_year)} must finish before June 1, ${this.school_year + 1}`;
+            } 
+            // If session 2 is valid
+            else {
                 delete this.errors["session_2"];
             }
         },
     },
+    // watch for changes in input data
     watch: {
+        selectedModule() {
+            this.validateSelectedModule();
+        },
+        teacher_id() {
+            this.validateTeacherId();
+        },
         session_1() {
             this.validateSession1();
         },
@@ -317,7 +420,9 @@ export default {
         },
     },
     async created() {
+        // Get all modules
         await this.getAllModuleNames();
+        // Get all teachers
         await this.getAllTeachers();
     },
 };
